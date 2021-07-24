@@ -186,7 +186,7 @@ function nextQuestion(client, mrStreamer) {
             });
     }    
     for (var k = 0; k < quiz[i].incorrect_answers.length; k++) {
-        answers += `${k+1}:[` + quiz[i].incorrect_answers[k] + `] `;
+        answers += `${k+1}:[  ${quiz[i].incorrect_answers[k]} ] `;
     }
     format(quiz[i].question).then((res)=>{
         quiz[i].question = res;
@@ -303,7 +303,7 @@ function scoreBoard(client, mrStreamer) {
 }
 
 function info (client, mrStreamer){
-    let msg = "only mods and the streamer can controll the game. players can join by typing !trivia and the answer number, the question lasts for 15 seconds, correct answer +1, wrong answer -1, u can't change your answer once submitted at the end of each game scores will be 'i hope' saved at a remote data base";
+    let msg = "only mods and the streamer can controll the game. players can join by typing !t and the answer number, the question lasts for 15 seconds, correct answer +1, wrong answer -1, u can't change your answer once submitted. you can see all time scores with !scoreboard";
     client.say(mrStreamer, `${msg}`);
 }
 
@@ -325,8 +325,12 @@ module.exports.gameManager = function(args, status, client, mrStreamer, username
     } else if (args[1] === 'stop' && trustedUser) {
         stopTrivia(client, mrStreamer);
         return 0;
-    } else if (args[1] === `scoreboard` && trustedUser) {
-        scoreBoard(client, mrStreamer);
+    } else if (args[1] === `scoreboard` ) {
+        if(started){
+            client.say(mrStreamer, `@${username} u can't use that when a game is being played`)
+        }else{
+            scoreBoard(client, mrStreamer);
+        }
         return 0;
     }else if(args[1] === 'doc' && trustedUser){
         client.say(mrStreamer, `${doc}`);
