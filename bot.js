@@ -100,28 +100,32 @@ client.on("message", (channel, tags, message, self) => {
     let space2 = Array(Math.abs(14 - status.length)).join(" ");
     let space3 = Array(Math.abs(20 - tags.username.length)).join(" ");
     let space1 = Array(Math.abs(15 - channel.length)).join(" ");
-    if(!translatethis){
-        console.log(`${channel}${space1} : [${status}]${space2}<${tags.username}>${space3} : ${message}`);
+    if(translatethis){
+        if(status.includes('vip') || status.includes('mod'))
+            console.log(`${channel}${space1} : [${status}]${space2}<${tags.username}>${space3} : ${message} (original)`);
+        else{
+            try {
+                let url = "https://translate.googleapis.com/translate_a/single?client=gtx&ie=UTF-8&oe=UTF-8&dt=bd&dt=ex&dt=ld&dt=md&dt=rw&dt=rm&dt=ss&dt=t&dt=at&dt=qc&sl=auto&tl=en&hl=en&q="
+                let options = {
+                    method : `GET`,
+                    headers:{
+                        'Content-Type' : 'application/json'
+                    }
+                }
+                url += message;
+                url = encodeURI(url);
+                fetch(url, options).then(res => res.json()).then(alteredmessage =>{
+                    let finalmessage = "";
+                    for(let i = 0; i < alteredmessage[0].length; i++) finalmessage += alteredmessage[0][i][0];
+                    console.log(`${channel}${space1} : [${status}]${space2}<${tags.username}>${space3} : ${finalmessage}`);
+                });
+            }catch {
+                console.log("something went wrong!! at b:125") ;
+            }
+        }
     }
     else {
-        try {
-            let url = "https://translate.googleapis.com/translate_a/single?client=gtx&ie=UTF-8&oe=UTF-8&dt=bd&dt=ex&dt=ld&dt=md&dt=rw&dt=rm&dt=ss&dt=t&dt=at&dt=qc&sl=auto&tl=en&hl=en&q="
-            let options = {
-                method : `GET`,
-                headers:{
-                    'Content-Type' : 'application/json'
-                }
-            }
-            url += message;
-            url = encodeURI(url);
-            fetch(url, options).then(res => res.json()).then(alteredmessage =>{
-                let finalmessage = "";
-                for(let i = 0; i < alteredmessage[0].length; i++) finalmessage += alteredmessage[0][i][0];
-                console.log(`${channel}${space1} : [${status}]${space2}<${tags.username}>${space3} : ${finalmessage}`);
-            });
-        }catch {
-            console.log("something went wrong!! at b:125") ;
-        }
+        console.log(`${channel}${space1} : [${status}]${space2}<${tags.username}>${space3} : ${message}`);
     }
     if(channel === '#'+mrStreamer){
         let args = message.split(" ");
@@ -131,7 +135,6 @@ client.on("message", (channel, tags, message, self) => {
         }
 
         if(messages.length > 60) messages.shift();
-
         if (args[0].toLowerCase() === "$translate") {
             if(status.includes('mod') || status.includes('vip') || tags.username.toLowerCase() === mrStreamer.toLowerCase()){
                 if(uniquechatters[tags.username]){
@@ -289,6 +292,39 @@ client.on("message", (channel, tags, message, self) => {
     }
     if(channel === '#'+me){
         let args = message.split(" ");
+        if (args[0].toLowerCase() === "$translate") {
+            if(status.includes('mod') || status.includes('vip') || tags.username.toLowerCase() === me.toLowerCase()){
+                if(uniquechatters[tags.username]){
+                    if(args[1]){
+                        messages.reverse();
+                        let msg = "";
+                        if(args[1].indexOf('@') >= 0){
+                            for(let i = 0; i < messages.length; i++){
+                                if(messages[i][0].toLowerCase() === args[1].toLowerCase()){
+                                    msg += messages[i][1];
+                                    msg += " / "
+                                }
+                            }
+                        }
+                        translate.translate(args, msg).then(trans => {
+                            let finalmessage = "";
+                            for(let i = 0; i < trans[0].length; i++) finalmessage += trans[0][i][0];
+                            client.say(me, `${finalmessage} @${tags.username}`);
+                        });
+                        uniquechatters[tags.username] = false;
+                        nexttime[tags.username] = 60;
+                        t[tags.username] = setInterval(() => { nexttime[tags.username] -= 1}, 1000);
+                        setTimeout(()=>{ uniquechatters[tags.username] = true; clearInterval(t[tags.username]) }, (60000))
+                    }else{
+                        client.say(me, `@${tags.username} $translate [message or @username]`)
+                    }
+                }else{
+                    client.say(me, `@${tags.username} ayo chill, for spamming and rate limiting purposes this ability is on cooldown for you, ${nexttime[tags.username]} seconds remaining`)
+                }
+            }else{
+                client.say(me, ` @${tags.username} sorry, for spamming and rate limiting purposes you are not allowed to use this FeelsBadMan`);
+            }
+        }
         if(args[0] === '$transto'){
             if(tags.username.toLowerCase() === me){
                 translate.translateTo(args).then(msg => {
