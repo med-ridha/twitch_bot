@@ -302,7 +302,6 @@ client.on("message", (channel, tags, message, self) => {
         let args = message.split(" ");
         if (args[0].toLowerCase() === "$translate") {
             if(status.includes('mod') || status.includes('vip') || tags.username.toLowerCase() === me.toLowerCase()){
-                if(uniquechatters[tags.username]){
                     if(args[1]){
                         messages.reverse();
                         let msg = "";
@@ -319,16 +318,9 @@ client.on("message", (channel, tags, message, self) => {
                             for(let i = 0; i < trans[0].length; i++) finalmessage += trans[0][i][0];
                             client.say(me, `${finalmessage} @${tags.username}`);
                         });
-                        uniquechatters[tags.username] = false;
-                        nexttime[tags.username] = 60;
-                        t[tags.username] = setInterval(() => { nexttime[tags.username] -= 1}, 1000);
-                        setTimeout(()=>{ uniquechatters[tags.username] = true; clearInterval(t[tags.username]) }, (60000))
                     }else{
                         client.say(me, `@${tags.username} $translate [message or @username]`)
                     }
-                }else{
-                    client.say(me, `@${tags.username} ayo chill, for spamming and rate limiting purposes this ability is on cooldown for you, ${nexttime[tags.username]} seconds remaining`)
-                }
             }else{
                 client.say(me, ` @${tags.username} sorry, for spamming and rate limiting purposes you are not allowed to use this FeelsBadMan`);
             }
