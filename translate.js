@@ -37,7 +37,7 @@ module.exports.translate = async function(args, message){
                 url = encodeURI(url);
                 const result = await fetch(url, options);
                 const raw = await result.json();
-                return await raw[0][0][0];
+                return await raw;
             }catch {
                 return "something went wrong!! at t:42" ;
             }
@@ -62,7 +62,7 @@ module.exports.translateTo = async function(args){
         url = encodeURI(url);
         const result = await fetch(url, options);
         const raw = await result.json();
-        return await raw[0][0][0];
+        return await raw;
     }catch {
         return "something went wrong!! at t:67" ;
     }

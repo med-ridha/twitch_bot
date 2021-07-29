@@ -68,7 +68,6 @@ let p =  0;
 let g =  0;
 let b = false;
 let join = false;
-let foundit = false;
 let spamtheJAM = null;
 
 function getBadges(tags) {
@@ -152,14 +151,15 @@ client.on("message", (channel, tags, message, self) => {
                                 for(let i = 0; i < messages.length; i++){
                                     if(messages[i][0].toLowerCase() === args[1].toLowerCase()){
                                         msg += messages[i][1];
-                                        msg += " / "
+                                        break;
                                     }
                                 }
                             }
                             translate.translate(args, msg).then(trans => {
                                 let finalmessage = "";
                                 for(let i = 0; i < trans[0].length; i++) finalmessage += trans[0][i][0];
-                                client.say(mrStreamer, `${finalmessage} @${tags.username}`);
+                                console.log(finalmessage)
+                                client.say(mrStreamer, `@${tags.username} : ${finalmessage} `);
                             });
                             uniquechatters[tags.username] = false;
                             nexttime[tags.username] = 60;
@@ -177,7 +177,7 @@ client.on("message", (channel, tags, message, self) => {
             }
             args = message.toLowerCase().split(" ");
             if (args[0] == "!trivia") {
-                //trivia.gameManager(args, status, client, mrStreamer, tags.username);
+                trivia.gameManager(args, status, client, mrStreamer, tags.username);
             }
             if (tags.username.toLowerCase() === me && message.toLowerCase() === "!nospoil") {
                 client.say(mrStreamer, "NOSPOIL");
@@ -259,17 +259,17 @@ client.on("message", (channel, tags, message, self) => {
                     return;
                 }
 
-                //      foundit = true;
-                //       emotes.forEach(emote => {
-                //        if (message.toLowerCase().includes(emote.toLowerCase())) {
-                //          foundit = true;
-                //        client.say(mrStreamer, `@${tags.username} ${emote}`);
-                //       return;
-                //    }
-                // })
-                // if (!foundit) {
-                //    client.say(mrStreamer, `@${tags.username} YouDontSay`);
-                //}
+                    /*let foundit = false;
+                emotes.forEach(emote => {
+                    if (message.toLowerCase().includes(emote.toLowerCase())) {
+                        foundit = true;
+                        client.say(mrStreamer, `@${tags.username} ${emote}`);
+                        return;
+                    }
+                })
+                if (!foundit) {
+                    client.say(mrStreamer, `@${tags.username} YouDontSay`);
+                }*/
             }
 
             let JAM = ["babyJAM", "catJAM", `Dance`];
@@ -298,43 +298,45 @@ client.on("message", (channel, tags, message, self) => {
             }
         }
     }
-    if(channel === '#'+me){
-        let args = message.split(" ");
-        if (args[0].toLowerCase() === "$translate") {
-            if(status.includes('mod') || status.includes('vip') || tags.username.toLowerCase() === me.toLowerCase()){
-                    if(args[1]){
-                        messages.reverse();
-                        let msg = "";
-                        if(args[1].indexOf('@') >= 0){
-                            for(let i = 0; i < messages.length; i++){
-                                if(messages[i][0].toLowerCase() === args[1].toLowerCase()){
-                                    msg += messages[i][1];
-                                    msg += " / "
+        if(channel === '#'+me){
+            let args = message.split(" ");
+            if (args[0].toLowerCase() === "$translate") {
+                if(status.includes('mod') || status.includes('vip') || tags.username.toLowerCase() === me.toLowerCase()){
+                        if(args[1]){
+                            messages.reverse();
+                            let msg = "";
+                            if(args[1].indexOf('@') >= 0){
+                                for(let i = 0; i < messages.length; i++){
+                                    if(messages[i][0].toLowerCase() === args[1].toLowerCase()){
+                                        msg += messages[i][1];
+                                        msg += " / "
+                                    }
                                 }
                             }
+                            translate.translate(args, msg).then(trans => {
+                                let finalmessage = "";
+                                for(let i = 0; i < trans[0].length; i++) finalmessage += trans[0][i][0];
+                                client.say(me, `${finalmessage} @${tags.username}`);
+                            });
+                        }else{
+                            client.say(me, `@${tags.username} $translate [message or @username]`)
                         }
-                        translate.translate(args, msg).then(trans => {
-                            let finalmessage = "";
-                            for(let i = 0; i < trans[0].length; i++) finalmessage += trans[0][i][0];
-                            client.say(me, `${finalmessage} @${tags.username}`);
-                        });
-                    }else{
-                        client.say(me, `@${tags.username} $translate [message or @username]`)
-                    }
-            }else{
-                client.say(me, ` @${tags.username} sorry, for spamming and rate limiting purposes you are not allowed to use this FeelsBadMan`);
+                }else{
+                    client.say(me, ` @${tags.username} sorry, for spamming and rate limiting purposes you are not allowed to use this FeelsBadMan`);
+                }
+            }
+            if(talk && args[0] === '$transto'){
+                if(tags.username.toLowerCase() === me){
+                    translate.translateTo(args).then(msg => {
+                        let finalmessage = "";
+                        for(let i=0; i < msg[0].length; i++) finalmessage += msg[0][i][0] + ' ';
+                        client.say(mrStreamer, `${finalmessage}`);
+                    });
+                }else{
+                    client.say(me, `@${tags.username} Get Out!`);
+                }
             }
         }
-        if(talk && args[0] === '$transto'){
-            if(tags.username.toLowerCase() === me){
-                translate.translateTo(args).then(msg => {
-                    client.say(mrStreamer, `${msg}`);
-                });
-            }else{
-                client.say(me, `@${tags.username} Get Out!`);
-            }
-        }
-    }
 });
 
 //let pool2 = ['hello', `hi`]
