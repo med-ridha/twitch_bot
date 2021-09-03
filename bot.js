@@ -15,12 +15,17 @@ const { pickuplines, emotes, puns } = extra;
 const args = process.argv.slice(2);
 let translatethis = false;
 let talk = false;
+let mods = true;
 const me = process.env.me
 if(args.includes('--translate')){
     translatethis = true;
     args.splice(args.indexOf('--translate'), 1);
 }
 
+if(args.includes('--mods')){
+    mods = false;
+    args.splice(args.indexOf('--mods'), 1);
+}
 if(args.includes('--talk')){
     talk = true;
     args.splice(args.indexOf('--talk'), 1);
@@ -106,7 +111,8 @@ client.on("message", (channel, tags, message, self) => {
     let space3 = Array(Math.abs(20 - tags.username.length)).join(" ");
     let space1 = Array(Math.abs(15 - channel.length)).join(" ");
     if(translatethis){
-        if(status.includes('vip') || status.includes('mod'))
+
+        if(mods && (status.includes('vip') || status.includes('mod')))
             console.log(`${channel}${space1} : [${status}]${space2}<${tags.username}>${space3} : ${message} (original)`);
         else{
             try {
