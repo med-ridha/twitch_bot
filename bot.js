@@ -1,12 +1,12 @@
 require('dotenv').config()
 const { StaticAuthProvider } = require("twitch-auth");
-const { ApiClient }          = require("twitch");
-const extra                  = require("./extra.js");
-const tmi                    = require("tmi.js");
-const opn                    = require("opn");
-const trivia                 = require("./quiz.js");
-const translate              = require("./translate.js");
-const fetch                  = require('node-fetch');
+const { ApiClient } = require("twitch");
+const extra = require("./extra.js");
+const tmi = require("tmi.js");
+const opn = require("opn");
+const trivia = require("./quiz.js");
+const translate = require("./translate.js");
+const fetch = require('node-fetch');
 const clientId = process.env.client_id;
 const accessToken = process.env.access_token ;
 const authProvider = new StaticAuthProvider(clientId, accessToken);
