@@ -16,7 +16,14 @@ const args = process.argv.slice(2);
 let translatethis = false;
 let talk = false;
 let mods = true;
-const me = process.env.me
+const me = process.env.me 
+
+if(args.includes('--users')){
+  console.log(`user1 ${process.env.user1}\nuser2 ${process.env.user2}\nuser3 ${process.env.user3}`)
+  process.exit(0)
+}
+
+
 if(args.includes('--translate')){
     translatethis = true;
     args.splice(args.indexOf('--translate'), 1);
@@ -36,13 +43,17 @@ if (!args[1]) {
 }
 let channels = [mrStreamer, me];
 
-let profiles = {
-  i_am_zarga: process.env.i_am_zarga_oauth,
-  z_trivia_bot: process.env.z_trivia_bot_oauth,
-  i_am_zargii: process.env.i_am_zargii_oauth,
+let oauths = {
+  user1: process.env.user1_oauth,
+  user2: process.env.user2_oauth,
+  user3: process.env.user3_oauth,
 };
 
-
+let users = {
+  user1: process.env.user1,
+  user2: process.env.user2,
+  user3: process.env.user3,
+}
 const client = tmi.Client({
   options: { debug: false, messagesLogLevel: "info" },
   connection: {
@@ -50,15 +61,15 @@ const client = tmi.Client({
     secure: true,
   },
   identity: {
-    username: `${args[1]}`,
-    password: `${profiles[args[1]]}`,
+    username: `${users[args[1]]}`,
+    password: `${oauths[args[1]]}`,
   },
   channels: channels,
 });
 client.connect().catch(console.error);
 
 client.on("connected", () => {
-  console.log(`connected to ${channels} as ${args[1]}`);
+  console.log(`connected to ${channels} as ${users[args[1]]}`);
 });
 
 client.on("disconnected", () => {
@@ -261,17 +272,6 @@ client.on("message", (channel, tags, message, self) => {
                     return;
                 }
 
-                    /*let foundit = false;
-                emotes.forEach(emote => {
-                    if (message.toLowerCase().includes(emote.toLowerCase())) {
-                        foundit = true;
-                        client.say(mrStreamer, `@${tags.username} ${emote}`);
-                        return;
-                    }
-                })
-                if (!foundit) {
-                    client.say(mrStreamer, `@${tags.username} YouDontSay`);
-                }*/
             }
 
             let JAM = ["babyJAM", "catJAM", `Dance`];
@@ -341,23 +341,5 @@ client.on("message", (channel, tags, message, self) => {
         }
 });
 
-//let pool2 = ['hello', `hi`]
-//let live = false;
-//let timerId = setInterval(() => {
-//    isStreamLive(mrStreamer).then((res) => {
-//        if (res && !live) {
-//            live = true;
-//            console.log(`${mrStreamer} is live`)
-//            let pos = Math.floor(Math.random() * pool2.length)
-//            opn(`https://www.twitch.tv/${mrStreamer}`);
-//            setTimeout(()=>{
-//                client.say(mrStreamer, `${pool2[pos]}`);
-//            }, 3000);
-//            clearInterval(timerId);
-//        }
-//    })
-//}, 4000);
 
-module.exports.SendMessage = function (message, channelName) {
-  client.say(channelName, message);
-};
+
