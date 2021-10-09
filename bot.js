@@ -35,18 +35,14 @@ if (!args[1]) {
   args[1] = me;
 }
 let channels = [mrStreamer, me];
+
 let profiles = {
   i_am_zarga: process.env.i_am_zarga_oauth,
   z_trivia_bot: process.env.z_trivia_bot_oauth,
   i_am_zargii: process.env.i_am_zargii_oauth,
 };
-async function isStreamLive(userName) {
-  const user = await apiClient.helix.users.getUserByName(userName);
-  if (!user) {
-    return false;
-  }
-  return (await apiClient.helix.streams.getStreamByUserId(user.id)) !== null;
-}
+
+
 const client = tmi.Client({
   options: { debug: false, messagesLogLevel: "info" },
   connection: {
