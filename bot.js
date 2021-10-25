@@ -97,9 +97,6 @@ function getBadges(tags) {
   } catch (e) {
     msg += "";
   }
-  if (msg.length == 0) {
-    msg = `none`;
-  }
   return msg;
 }
 
@@ -107,7 +104,7 @@ function writeToConsole(msg, status, username){
   let length = status.length + username.length + 4;
   let columnsLeft = process.stdout.columns - length;
   if (columnsLeft < 0){
-    console.error("please resize the your terminal atleast 37 width");
+    console.error(`please resize the your terminal atleast ${length} width`);
     process.exit(0);
   }
   console.log(`${status}  ${username}|${msg.substr(0, columnsLeft)}`);
@@ -118,6 +115,12 @@ function writeToConsole(msg, status, username){
     msg = msg.substring(columnsLeft, msg.length);
   }
 }
+
+process.stdout.on("resize" , () =>{
+  console.clear();
+  console.log('resizing the console will clear it to prevent ugly messages')
+})
+
 let started = false;
 let messages = [];
 let uniquechatters = [];
@@ -156,7 +159,10 @@ client.on("message", (channel, tags, message, self) => {
         url = encodeURI(url);
         fetch(url, options).then(res => res.json()).then(alteredmessage =>{
           let finalmessage = "";
-          for(let i = 0; i < alteredmessage[0].length; i++) finalmessage += alteredmessage[0][i][0];
+          for(let i = 0; i < alteredmessage[0].length; i++) {
+            if(alteredmessage[0][i][0] !== "null" && alteredmessage[0][i][0] !== null)
+              finalmessage += alteredmessage[0][i][0];
+          }
           writeToConsole(finalmessage, status, username);
          // console.log(`[${status}]${space2}<${tags.username}>${space3} : ${finalmessage}`);
         });
