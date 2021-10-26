@@ -128,10 +128,11 @@ let transtimeout = true;
 let nexttime = [];
 let t = [];
 client.on("cheer", (channel, tags, message, self) =>{
-  console.log(message, tags.username);
+  console.error(`${message}${tags.username} |||||||||||| test`);
+  process.exit(0);
 });
 client.on("message", (channel, tags, message, self) => {
-  if (self) return;
+  if (self || message.substr(0, 1) === '!') return;
   let username = tags.username;
   if(username.toLowerCase() === `streamlabs` || username.toLowerCase() === `streamelements` || username.toLowerCase() === `nightbot`) return;
   message = message.toString().replace(/\s+/g, ' ');
