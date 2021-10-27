@@ -1,0 +1,75 @@
+<!DOCTYPE html5>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <title>Chat box</title>
+    </head>
+    <style>
+body{
+    overflow:hidden;
+    background-color: black;
+}
+textarea{
+    font-family: inherit;
+    appearance: none;
+    background-clip: padding-box;
+    line-height: 1;
+    transition: border var(--timing-short) ease-in,background-color var(--timing-short) ease-in;
+    border-width: var(--border-width-input);
+    border-color: lightblue;
+    color: white;
+    background-color: var(--color-background-input);
+    display: block;
+    width: 100%;
+    padding: var(--space-05) var(--space-1);
+    resize: none;
+    margin-top: -10px;
+}
+            h5, span{
+                margin-top: -8px;
+                color: white;
+            }
+            #Ucon{
+                float: left;
+            }
+            #Scon{
+                float: right;
+            }
+    </style>
+    <body>
+        <h5 id="Ucon"><span>User: </span><span id='identity'>none</span></h5> 
+        <h5 id="Scon"><span>Streamer: </span><span id='streamer'>none</span></h5>
+        <form onsubmit='event.preventDefault(); sendMessage()' >
+            <textarea id='msg' value='' data-a-target="chat-input" data-test-selector="chat-input" aria-label="Send a message"   maxlength="500"></textarea>
+            <button type='submit' style='display:none'>Send</button>
+        </form>
+    </body>
+    <script>
+        const url = 'http://localhost:1337/sendmessage';
+        const url2 = 'http://localhost:1337/getID'
+        fetch(url2, {
+            method: 'GET',
+            headers:{
+                'Content-Type':'application/json'
+            }
+        }).then(res => res.json()).then(res => {
+            document.getElementById('identity').innerHTML = res.user;
+            document.getElementById('streamer').innerHTML = res.streamer;
+        }).catch(error => console.error(error));
+        function sendMessage(){
+            let v = document.getElementById('msg').value;
+            let msg = {message : v};
+            document.getElementById('msg').value="";
+            let options ={
+            method: 'POST',
+            headers: {
+                'Content-Type':'application/json',
+            },
+            body: JSON.stringify(msg)
+        }
+            fetch(url, options).then(res => res.json()).then(res => console.log(res));
+        }
+    </script>
+</html>
+
+
