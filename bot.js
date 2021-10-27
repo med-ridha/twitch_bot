@@ -1,6 +1,7 @@
 require('/home/ridha/src/twitch_bot/node_modules/dotenv').config()
 const { StaticAuthProvider } = require("twitch-auth");
 const { ApiClient } = require("twitch");
+const { spawn } = require("child_process");
 const extra = require("./extra.js");
 const tmi = require("tmi.js");
 const opn = require("opn");
@@ -16,17 +17,17 @@ const { pickuplines, emotes, puns } = extra;
 const args = process.argv.slice(2);
 let translatethis = false;
 let talk = false;
+let chat = false;
 let mods = true;
 let width = process.stdout.columns;
 let height = process.stdout.rows;
-const me = process.env.me 
+const me = process.env.me
 if(args.includes('--users')){
   console.log(`user1 ${process.env.user1}\nuser2 ${process.env.user2}\nuser3 ${process.env.user3}`)
   process.exit(0)
 }
-const { spawn } = require("child_process");
 if(args.includes('--chat-box')){
-  spawn("qutebrowser", ["localhost:1337/chatbox", "--target", "window"])
+  chat = true;
   args.splice(args.indexOf('--chat-box'), 1);
 }
 
@@ -63,7 +64,7 @@ let users = {
   user3: process.env.user3,
 }
 
-const client = tmi.Client({
+const Options = {
   options: { debug: false, messagesLogLevel: "info" },
   connection: {
     reconnect: false,
@@ -74,15 +75,27 @@ const client = tmi.Client({
     password: `${oauths[args[1]]}`,
   },
   channels: channels,
-});
+}
+const chatbot = tmi.Client(Options);
+if(chat){
+  chatbot.connect().catch(console.error);
+  chatbot.on("connected", () => {
+    console.log(`chat bot connected to ${channels} as ${users[args[1]]}`);
+  });
+  chatbot.on("disconnected", () => {
+    console.log(`chat bot disconneted from ${channels}`);
+  });
+  spawn("qutebrowser", ["localhost:1337/chatbox", "--target", "window"])
+}
+const client = tmi.Client(Options);
 client.connect().catch(console.error);
-
 client.on("connected", () => {
-  console.log(`connected to ${channels} as ${users[args[1]]}`);
+  console.log(`client connected to ${channels} as ${users[args[1]]}`);
 });
 client.on("disconnected", () => {
-  console.log(`disconneted from ${channels}`);
+  console.log(`client disconneted from ${channels}`);
 });
+
 let p =  0;
 let g =  0;
 let b = false;
@@ -108,28 +121,32 @@ function getBadges(tags) {
   return msg;
 }
 function writeToConsole(msg, status, username){
-  let length = username.length+10;
-  let columnsLeft = process.stdout.columns - length + 9;
+  let length = 15;
+  let space = "";
+  if(username.length < length){
+    space = Array(Math.abs((length+1) - username.length)).join(" ");
+  }
+  let columnsLeft = process.stdout.columns - (length+1);
   if (columnsLeft < 0){
     console.error(`please resize the your terminal atleast ${length} width`);
     process.exit(0);
   }
-  if(status.indexOf("mod") > -1){
-    username = chalk.green(username);
-  }else if(status.indexOf("vip") > -1){
-    username = chalk.magentaBright(username);
-  }else if(status.indexOf("sub") > -1){
-    username = chalk.yellowBright(username);
-  }else username = chalk.blue(username);
+
+  
   if(msg.indexOf('zarga') > -1) msg = chalk.red(msg);
-  console.log(`${username.substr(0, length)}|${msg.substr(0, columnsLeft)}`);
-  msg = msg.substring(columnsLeft, msg.length);
-  username = username.substring(length, username.length);
-  let space = Array((length+1 - username.length)-10).join(" ");
   while (msg.length  !== 0 || username.length !== 0) {
-    console.log(`${space}${username.substr(0, length)}|${msg.substr(0, columnsLeft)}`);
+    if(status.indexOf("mod") > -1){
+      console.log(`${space}${chalk.green(username.substr(0, length)+`|`)}${msg.substr(0, columnsLeft)}`);
+    }else if(status.indexOf("vip") > -1){
+      console.log(`${space}${chalk.magentaBright(username.substr(0, length)+`|`)}${msg.substr(0, columnsLeft)}`);
+    }else if(status.indexOf("sub") > -1){
+      console.log(`${space}${chalk.yellowBright(username.substr(0, length)+`|`)}${msg.substr(0, columnsLeft)}`);
+    }else {
+      console.log(`${space}${chalk.blue(username.substr(0, length)+`|`)}${msg.substr(0, columnsLeft)}`);
+    } 
     msg = msg.substring(columnsLeft, msg.length);
-    username = username.substring(length, username.length);
+    username =username.substring(length, username.length);
+    space = Array(Math.abs((length+1) - username.length)).join(" ");
   }
 }
 
@@ -149,8 +166,6 @@ let nexttime = [];
 let t = [];
 client.on("cheer", (channel, tags, message, self) =>{
   let username = tags.username;
-  let space3 = Array(Math.abs(31- username.length)).join(" ");
-  username = space3 + username;
   writeToConsole(message, getBadges(tags), username);
 });
 client.on("message", (channel, tags, message, self) => {
@@ -160,8 +175,6 @@ client.on("message", (channel, tags, message, self) => {
   message = message.toString().replace(/\s+/g, ' ');
   message = message.toString().replace(/&/g, ' ');
   let status = getBadges(tags);
-  let space3 = Array(Math.abs(31- username.length)).join(" ");
-  username = space3 + username;
   if(translatethis){
     if(mods && (status.includes('vip') || status.includes('mod'))){
       writeToConsole(message, status, username);
@@ -399,7 +412,7 @@ const path = require('path');
 app.use(cors());
 app.use(express.json());
 app.post('/sendmessage', function (req, res) {
-  client.say(mrStreamer, `${req.body.message}`);
+  chatbot.say(mrStreamer, `${req.body.message}`);
   res.json('ok');
 })
 app.get('/chatbox', (req, res)=>{
