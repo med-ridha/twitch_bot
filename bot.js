@@ -6,23 +6,23 @@ const path = require('path');
 const extra = require("./src/extra.js");
 const tmi = require("tmi.js");
 const chalk = require('chalk');
+const trivia = require("./src/quiz.js");
 const translate = require("./src/translate.js");
 const fetch = require('node-fetch');
 const { pickuplines, /*emotes*/ puns } = extra;
 const args = process.argv.slice(2);
+const me = process.env.me
 
 let translatethis = false;
 let talk = false;
 let chat = false;
 let mods = true;
 let width = process.stdout.columns;
-const me = process.env.me
 
 if(args.includes('--users')){
   console.log(`user1 ${process.env.user1}\nuser2 ${process.env.user2}\nuser3 ${process.env.user3}`)
   process.exit(0)
 }
-
 if(args.includes('--chat-box')){
   chat = true;
   args.splice(args.indexOf('--chat-box'), 1);
@@ -251,6 +251,7 @@ client.on("message", (channel, tags, message, self) => {
       args = message.toLowerCase().split(" ");
       if (args[0] == "!trivia") {
         //trivia.gameManager(args, status, client, mrStreamer, tags.username);
+        client.say(mrStreamer, `feature currently disabled`)
       }
       if (tags.username.toLowerCase() === me && message.toLowerCase() === "!nospoil") {
         client.say(mrStreamer, "NOSPOIL");
