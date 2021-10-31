@@ -2,12 +2,15 @@ require('/home/ridha/src/twitch_bot/node_modules/dotenv').config()
 const { StaticAuthProvider } = require("twitch-auth");
 const { ApiClient } = require("twitch");
 const { spawn } = require("child_process");
-const extra = require("./extra.js");
+const cors = require('cors');
+const express = require('express')
+const path = require('path');
+const extra = require("../extra.js");
 const tmi = require("tmi.js");
 const opn = require("opn");
 const chalk = require('chalk');
 //const trivia = require("./quiz.js");
-const translate = require("./translate.js");
+const translate = require("../translate.js");
 const fetch = require('node-fetch');
 const clientId = process.env.client_id;
 const accessToken = process.env.access_token ;
@@ -132,8 +135,7 @@ function writeToConsole(msg, status, username){
     process.exit(0);
   }
 
-  
-  if(msg.indexOf('zarga') > -1) msg = chalk.red(msg);
+  if(msg.toLowerCase().indexOf('zarga') > -1) msg = chalk.red(msg);
   while (msg.length  !== 0 || username.length !== 0) {
     if(status.indexOf("mod") > -1){
       console.log(`${space}${chalk.green(username.substr(0, length)+`|`)}${msg.substr(0, columnsLeft)}`);
@@ -405,10 +407,7 @@ client.on("message", (channel, tags, message, self) => {
   }
 });
 
-const cors = require('cors');
-const express = require('express')
 const app = express()
-const path = require('path');
 app.use(cors());
 app.use(express.json());
 app.post('/sendmessage', function (req, res) {
@@ -416,7 +415,7 @@ app.post('/sendmessage', function (req, res) {
   res.json('ok');
 })
 app.get('/chatbox', (req, res)=>{
-  res.sendFile(path.join(__dirname, '/test.html'));
+  res.sendFile(path.join(__dirname, 'src/test.html'));
 })
 app.get('/getID', function (req, res) {
   let data = {
