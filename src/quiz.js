@@ -57,7 +57,7 @@ function getToken() {
     })
 }
 async function getQuestions(client, mrStreamer) {
-    let promise = new Promise((res, rej)=>{
+    let promise = new Promise((res)=>{
         let API_URL = `https://opentdb.com/api.php?amount=${amount}&category=${category}&difficulty=${difficulty}&type=${type}&token=${token}`
         fetch(API_URL, {
             method:'GET',
@@ -79,7 +79,7 @@ async function getQuestions(client, mrStreamer) {
 }
 
 async function getCategories() {
-    let promise = new Promise((res, rej)=>{
+    let promise = new Promise((res)=>{
         let API_URL = `https://opentdb.com/api_category.php`
         fetch(API_URL, {
             method:'GET',
@@ -217,7 +217,6 @@ function nextQuestion(client, mrStreamer) {
     }, 15000);
     return 0;
 }
-let t = [`well done`, `good job`, `nice`, `fantastic`];
 
 function play(answer, player) {
     if (!players[player]) {

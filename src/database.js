@@ -1,23 +1,23 @@
 require('dotenv').config();
 const { MongoClient } = require("mongodb");
 const uri = process.env.MONGOD_URL;
+/*
 function Comparator(a, b) {
     if (a[1] < b[1]) return -1;
     if (a[1] > b[1]) return 1;
     return 0;
-}
-
+}*/
 let people = [];
 
 module.exports.fetchData = async function() {
-    let promise = new Promise((res, rej) => {
+    let promise = new Promise((res) => {
         MongoClient.connect(uri, { useUnifiedTopology: true }, function(err, db) {
             if (err) throw err;
-            var dbo = db.db("mydb");
+            let dbo = db.db("mydb");
             dbo.collection("scoreboard").find({}).toArray(function(err, result) {
                 if (err) throw err;
                 if (!result) return;
-                for (var i = 0; i < result.length; i++) {
+                for (let i = 0; i < result.length; i++) {
                     people.push({ name: result[i].name, score: result[i].score });
                 }
                 db.close().then(() => {
@@ -32,12 +32,12 @@ module.exports.fetchData = async function() {
 }
 
 module.exports.addtodb = async function(data) {
-    let promise = new Promise((res, rej) => {
+    let promise = new Promise((res) => {
         addtobackupdb(data).then(() => {
             deleteCollection().then(() => {
                 MongoClient.connect(uri, { useUnifiedTopology: true }, function(err, db) {
                     if (err) throw err;
-                    var dbo = db.db("mydb");
+                    let dbo = db.db("mydb");
                     dbo.collection("scoreboard").insertMany(data, function(err, result) {
                         if (err) throw err;
                         console.log(result);
@@ -55,10 +55,10 @@ module.exports.addtodb = async function(data) {
 
 
 async function deleteCollection() {
-    let promise = new Promise((res, rej) => {
+    let promise = new Promise((res) => {
         MongoClient.connect(uri, { useUnifiedTopology: true }, function(err, db) {
             if (err) throw err;
-            var dbo = db.db("mydb");
+            let dbo = db.db("mydb");
             dbo.collection("scoreboard").drop(function(err, delOK) {
                 if (err) throw err;
                 if (delOK) console.log("collection deleted");
@@ -74,9 +74,9 @@ async function deleteCollection() {
 
 async function addtobackupdb(data) {
     try {
-        let promise = new Promise((res, rej) => {
+        let promise = new Promise((res) => {
             MongoClient.connect(uri, { useUnifiedTopology: true }, function(err, db) {
-                var dbo = db.db("backup");
+                let dbo = db.db("backup");
                 dbo.collection("scoreboard2").insertMany(data, function(err, result) {
                     console.log(result);
                     db.close().then(() => {

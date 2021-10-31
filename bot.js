@@ -1,34 +1,28 @@
 require('/home/ridha/src/twitch_bot/node_modules/dotenv').config()
-const { StaticAuthProvider } = require("twitch-auth");
-const { ApiClient } = require("twitch");
 const { spawn } = require("child_process");
 const cors = require('cors');
 const express = require('express')
 const path = require('path');
 const extra = require("./src/extra.js");
 const tmi = require("tmi.js");
-const opn = require("opn");
 const chalk = require('chalk');
-//const trivia = require("./src/quiz.js");
 const translate = require("./src/translate.js");
 const fetch = require('node-fetch');
-const clientId = process.env.client_id;
-const accessToken = process.env.access_token ;
-const authProvider = new StaticAuthProvider(clientId, accessToken);
-const apiClient = new ApiClient({ authProvider });
-const { pickuplines, emotes, puns } = extra;
+const { pickuplines, /*emotes*/ puns } = extra;
 const args = process.argv.slice(2);
+
 let translatethis = false;
 let talk = false;
 let chat = false;
 let mods = true;
 let width = process.stdout.columns;
-let height = process.stdout.rows;
 const me = process.env.me
+
 if(args.includes('--users')){
   console.log(`user1 ${process.env.user1}\nuser2 ${process.env.user2}\nuser3 ${process.env.user3}`)
   process.exit(0)
 }
+
 if(args.includes('--chat-box')){
   chat = true;
   args.splice(args.indexOf('--chat-box'), 1);
