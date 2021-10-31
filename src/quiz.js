@@ -4,7 +4,7 @@ let db;
 let categories ;
 let timer = null;
 let quiz = null;
-var i = 0;
+let i = 0;
 let token = null;
 let players = [];
 let amount;
@@ -20,20 +20,18 @@ function getPlayersFromDB() {
 getPlayersFromDB();
 
 function allPlayers(client, mrStreamer){
-    
     database.fetchData().then((res) => {
-        var msg = "";
-        for (var i = 0; i < res.length; i++){
+        let msg = "";
+        for (let i = 0; i < res.length; i++){
             msg += `[${res[i].name} : ${res[i].score}] `
         }
         client.say(mrStreamer , `${msg}`);
     })
-    
 }
 
 function size(arr) {
-    var size = 0;
-    for (var key in arr) {
+    let size = 0;
+    for (let key in arr) {
         if (arr.hasOwnProperty(key)) size++;
     }
     return size;
@@ -88,9 +86,9 @@ async function getCategories() {
             body: JSON.stringify(),
         }).then(response => {
             response.json().then(result => {
-                var r = result.trivia_categories;
-                var msg = "";
-                for (var i = 0; i < r.length; i++){
+                let r = result.trivia_categories;
+                let msg = "";
+                for (let i = 0; i < r.length; i++){
                     msg += r[i].id + " : " + r[i].name + " | ";
                 }
                 msg = msg.replace(/Entertainment:/g, "");
@@ -122,7 +120,7 @@ function more(client, mrStreamer) {
         }, 3000);
     }
 }
-var started = false;
+let started = false;
 
 function startTrivia(client, mrStreamer) {
     if (started) {
@@ -146,7 +144,7 @@ function startTrivia(client, mrStreamer) {
     return 0;	
 }
 
-var answers = "";
+let answers = "";
 
 async function format(msg){
     let promise = new Promise((res, rej)=>{
@@ -169,7 +167,7 @@ async function format(msg){
 }
 
 
-var currentQuesionplayers = [];
+let currentQuesionplayers = [];
 
 function nextQuestion(client, mrStreamer) {
     clearTimeout(timer);
@@ -180,12 +178,12 @@ function nextQuestion(client, mrStreamer) {
     answers = "";
     quiz[i].incorrect_answers[quiz[i].incorrect_answers.length] = quiz[i].correct_answer;
     quiz[i].incorrect_answers = quiz[i].incorrect_answers.sort();
-    for(var k = 0; k < quiz[i].incorrect_answers.length; k++){
+    for(let k = 0; k < quiz[i].incorrect_answers.length; k++){
         format(quiz[i].incorrect_answers[k]).then((res)=>{
             quiz[i].incorrect_answers[k] = res;
             });
     }    
-    for (var k = 0; k < quiz[i].incorrect_answers.length; k++) {
+    for (let k = 0; k < quiz[i].incorrect_answers.length; k++) {
         answers += `${k+1}:[  ${quiz[i].incorrect_answers[k]} ] `;
     }
     format(quiz[i].question).then((res)=>{
@@ -201,8 +199,8 @@ function nextQuestion(client, mrStreamer) {
     });
     timer = setTimeout(() => {
         if (size(currentQuesionplayers) > 0) {
-            for (var key in currentQuesionplayers) {
-                var b = Number(currentQuesionplayers[key]);
+            for (let key in currentQuesionplayers) {
+                let b = Number(currentQuesionplayers[key]);
                 if (quiz[i].incorrect_answers[b] === quiz[i].correct_answer) {
                     players[key]++;
                 } else {
@@ -219,7 +217,7 @@ function nextQuestion(client, mrStreamer) {
     }, 15000);
     return 0;
 }
-var t = [`well done`, `good job`, `nice`, `fantastic`];
+let t = [`well done`, `good job`, `nice`, `fantastic`];
 
 function play(answer, player) {
     if (!players[player]) {
@@ -234,15 +232,15 @@ function play(answer, player) {
 
 function stopTrivia(client, mrStreamer) {
     clearTimeout(timer);
-    var msg = "";
+    let msg = "";
     if (size(players) > 0) {
-        var max = -100;
-        for (var i in players) {
+        let max = -100;
+        for (let i in players) {
             if (players[i] > max) {
                 max = players[i];
             }
         }
-        for (var i in players) {
+        for (let i in players) {
             if (players[i] == max) {
                 msg += i + " ";
             }
@@ -260,14 +258,14 @@ function stopTrivia(client, mrStreamer) {
     }
     quiz = null;
     started = false;
-    for (var k = 0; k < db.length; k++) {
+    for (let k = 0; k < db.length; k++) {
         if (players[db[k].name]) {
             db[k].score += players[db[k].name];
         }
     }
-    for (var i in players) {
-	var found = false;
-	for(var j = 0; j < db.length; j++){
+    for (let i in players) {
+	let found = false;
+	for(let j = 0; j < db.length; j++){
 		if(i === db[j].name){
 			found = true;
 			break;
@@ -286,7 +284,7 @@ function stopTrivia(client, mrStreamer) {
 
 
 function scoreBoard(client, mrStreamer) {
-    var scoreBoard = "";
+    let scoreBoard = "";
     if (started) {
         client.say(mrStreamer, `a game is being played right now please wait after it ends to view the score Board`);
         return;
@@ -294,7 +292,7 @@ function scoreBoard(client, mrStreamer) {
         client.say(mrStreamer, `score Board is empty... FeelsBadMan`);
         return;
     } else {
-        for (var i in players) {
+        for (let i in players) {
             scoreBoard += "[" + i + " : " + players[i] + "]"
         }
         client.say(mrStreamer, `${scoreBoard}`);
@@ -308,7 +306,7 @@ function info (client, mrStreamer){
 }
 
 module.exports.gameManager = function(args, status, client, mrStreamer, username) {
-    var trustedUser = (status.includes(`mod`) || username.toLowerCase() === mrStreamer.toLowerCase() || username === `i_am_zarga`);
+    let trustedUser = (status.includes(`mod`) || username.toLowerCase() === mrStreamer.toLowerCase() || username === `i_am_zarga`);
     if(!args[1] && trustedUser){
         info(client, mrStreamer);
         return 0;
