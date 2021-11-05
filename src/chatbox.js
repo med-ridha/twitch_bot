@@ -38,7 +38,8 @@ module.exports.doTheThing = function (chatbot, message, mrStreamer, trans){
     }
 }
 
-/* Implement this
+/* Todo:
+ * Implement this
     
       let JAM = ["babyJAM", "catJAM", `Dance`];
       let ph = ``;
