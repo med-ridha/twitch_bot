@@ -46,30 +46,35 @@ body{
         </form>
     </body>
     <script>
-        const url = 'http://localhost:1337/sendmessage';
-        const url2 = 'http://localhost:1337/getID'
-        fetch(url2, {
-            method: 'GET',
-            headers:{
-                'Content-Type':'application/json'
-            }
-        }).then(res => res.json()).then(res => {
-            document.getElementById('identity').innerHTML = res.user;
-            document.getElementById('streamer').innerHTML = res.streamer;
-        }).catch(error => console.error(error));
+        function loadEnviroment(){
+            let url2 = 'http://localhost:1337/getID'
+            fetch(url2, {
+                method: 'GET',
+                headers:{
+                    'Content-Type':'application/json'
+                }
+            }).then(res => res.json()).then(res => {
+                document.getElementById('identity').innerHTML = res.user;
+                document.getElementById('streamer').innerHTML = res.streamer;
+            }).catch(error => console.error(error));
+        }
         function sendMessage(){
+            let url = 'http://localhost:1337/sendmessage';
             let v = document.getElementById('msg').value;
+            let args = v.split(" ");
+            if (args[0] === '!changeStreamer') url = 'http://localhost:1337/changeStreamer'
             let msg = {message : v};
             document.getElementById('msg').value="";
-            let options ={
+            let options = {
             method: 'POST',
             headers: {
                 'Content-Type':'application/json',
             },
             body: JSON.stringify(msg)
         }
-            fetch(url, options).then(res => res.json()).then(res => console.log(res));
+            fetch(url, options).then(res => {res.json()}).then(res => {console.log(res); loadEnviroment();});
         }
+        loadEnviroment();
     </script>
 </html>
 
