@@ -14,7 +14,6 @@ const me = process.env.me
 let translatethis = false;
 let talk = false;
 let chat = false;
-let mods = true;
 let width = process.stdout.columns;
 
 if(args.includes('--users')){
@@ -23,6 +22,7 @@ if(args.includes('--users')){
 }
 if(args.includes('--chat-box')){
   chat = true;
+  talk = true;
   args.splice(args.indexOf('--chat-box'), 1);
 }
 
@@ -31,10 +31,6 @@ if(args.includes('--translate')){
   args.splice(args.indexOf('--translate'), 1);
 }
 
-if(args.includes('--mods')){
-    mods = false;
-    args.splice(args.indexOf('--mods'), 1);
-}
 
 if(args.includes('--autobot')){
     talk = true;
@@ -120,7 +116,7 @@ function getBadges(tags) {
   let msg = "";
   try {
     for (let [key] of Object.entries(tags.badges)) {
-      if (key === "subscriber") key = `sub/`;
+      if (key === "subscriber" || key === "founder") key = `sub/`;
       else if (key === "moderator") key = `mod/`;
       else if (key === "vip") key = `vip/`;
       else key = "";
@@ -143,7 +139,6 @@ function writeToConsole(msg, status, username){
     console.error(`please resize the your terminal atleast ${length} width`);
     process.exit(0);
   }
-
   if(msg.toLowerCase().indexOf('zarga') > -1) msg = chalk.red(msg);
   while (msg.length  !== 0 || username.length !== 0) {
     if(status.indexOf("mod") > -1){
@@ -182,14 +177,16 @@ client.on("cheer", (channel, tags, message, self) =>{
 });
 let join = false;
 client.on("message", (channel, tags, message, self) => {
-  if (self || message.substr(0, 1) === '!') return;
   let username = tags.username;
-  if(username.toLowerCase() === `streamlabs` || username.toLowerCase() === `streamelements` || username.toLowerCase() === `nightbot`) return;
+  let isBot = false;
+  let isCommand = false;
+  if (message.substr(0, 1) === '!') isCommand = true;
+  if(username.toLowerCase() === `streamlabs` || username.toLowerCase() === `streamelements` || username.toLowerCase() === `nightbot`) isBot = true;
   message = message.toString().replace(/\s+/g, ' ');
   message = message.toString().replace(/&/g, ' ');
   let status = getBadges(tags);
   if(translatethis){
-    if(mods && (status.includes('vip') || status.includes('mod'))){
+    if(isCommand || isBot || status.includes('vip') || status.includes('mods')){
       writeToConsole(message, status, username);
     }
     else{
@@ -206,17 +203,12 @@ client.on("message", (channel, tags, message, self) => {
   else {
     writeToConsole(message, status, username);
   }
+  if (self) return;
   let args = message.split(" ");
   if(talk){
     args = message.toLowerCase().split(" ");
     if (args[0] == "!trivia") {
       client.say(mrStreamer, `feature currently disabled`)
-    }
-    if (tags.username.toLowerCase() === me && message.toLowerCase() === "!nospoil") {
-      client.say(mrStreamer, "NOSPOIL");
-      setInterval(() => {
-        client.say(mrStreamer, "NOSPOIL");
-      }, 50);
     }
     message = message.toLowerCase();
     if (!join && tags.username.toLowerCase() === "streamelements" && message.includes(`enter by typing "!join"`)) {

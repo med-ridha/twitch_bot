@@ -4,14 +4,13 @@ let JAM = ["babyJAM", "catJAM", `Dance`];
 let ph = ``;
 let spamtheJAM = '';
 module.exports.parseTheThing = function (chatbot, message, mrStreamer, trans){
-    console.log(message.substr(0, 1));
     if(message.substr(0, 1) === '!'){
         message = message.substr(1, message.length - 1);
         let args = message.split(" ");
         let command = args.shift();
         let messageRaw = args.join(" ");
         switch(command.toLowerCase()){
-            case "send":
+            case "send": case "s":
                 chatbot.say(mrStreamer, messageRaw);
                 break;
             case "transto":
@@ -41,7 +40,7 @@ module.exports.parseTheThing = function (chatbot, message, mrStreamer, trans){
                     }
                     chatbot.say(mrStreamer, ph);
                     ph = ``;
-                }, 2000);
+                }, 1000);
                 break;
             case "stopthejam" :
                 clearInterval(spamtheJAM);
