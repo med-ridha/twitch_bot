@@ -30,59 +30,6 @@ const pickupliness = [
     `out all your curves, your smile is my favourite.`
 ]
 
-const emotess = [
-    `LUL`,
-    `kekw`,
-    `Kappa`,
-    `CoolStoryBob`,
-    `4Head`,
-    `FrankerZ`,
-    `Jebaited`,
-    `PJSalt`,
-    `notlikethis`,
-    `WutFace`,
-    `VoHiYo`,
-    `SeemsGood`,
-    `PogChamp`,
-    `TriHard`,
-    `CmonBruh`,
-    `haHAA`,
-    `SourPls`,
-    `FeelsBadMan`,
-    `FeelsGoodMan`,
-    `SARI`,
-    `gachiGASM`,
-    `Monkas`,
-    `Poggers`,
-    `PepeHands`,
-    `MrDestructoid`,
-    `VisLaud`,
-    `ailDJ`,
-    `ailTurtle`,
-    `ailBaby`,
-    `ailBaby`,
-    `ailDerp`,
-    `ailCheer`,
-    `ailBush`,
-    `ailHug`,
-    `ailHappi`,
-    `HolidayOrnament`,
-    `ailCR`,
-    `ResidentSleeper`,
-    `SSSsss`,
-    `PanicVis`,
-    `ailPizza`,
-    `ailDuck`,
-    `BrokeBack`,
-    `HolidaySanta`,
-    `BibleThump`,
-    `BibleThump`,
-    `WutFace`,
-    `Kreygasm`,
-    `SeemsGood`,
-    `FootYellow`,
-    `GlitchNRG`
-]
 
 const puns = [
     `Light travels faster than sound. That's why some people appear bright until you hear them speak`,
@@ -132,6 +79,5 @@ const puns = [
 
 module.exports = {
     pickuplines: pickupliness,
-    emotes: emotess,
     puns: puns
 };

@@ -8,7 +8,6 @@ const tmi = require("tmi.js");
 const chalk = require('chalk');
 //const trivia = require("./src/quiz.js");
 const translate = require("./src/translate.js");
-const fetch = require('node-fetch');
 const args = process.argv.slice(2);
 const me = process.env.me
 
@@ -42,11 +41,11 @@ if(args.includes('--autobot')){
     args.splice(args.indexOf('--talk'), 1);
 }
 let mrStreamer = args[0] || me;
-if (!args[1]) {
-  args[1] = me;
+if (!args[1] || chat) {
+  args[1] = 'user1';
 }
 
-let channels = [mrStreamer, me];
+let channels = [mrStreamer];
 
 let oauths = {
   user1: process.env.user1_oauth,
@@ -70,19 +69,31 @@ let Options2 = {
     username: `${users[args[1]]}`,
     password: `${oauths[args[1]]}`,
   },
-  channels: [me],
+  channels: [],
 }
-let Options = {
-  options: { debug: false, messagesLogLevel: "info" },
-  connection: {
-    reconnect: true,
-    secure: true,
-  },
-  identity: {
-    username: `${users[args[1]]}`,
-    password: `${oauths[args[1]]}`,
-  },
-  channels: channels,
+let Options = {};
+if(args[1] === 'nouser' && !chat){
+   Options = {
+    options: { debug: false, messagesLogLevel: "info" },
+    connection: {
+      reconnect: true,
+      secure: true,
+    },
+    channels: channels,
+  }
+}else{
+   Options = {
+    options: { debug: false, messagesLogLevel: "info" },
+    connection: {
+      reconnect: true,
+      secure: true,
+    },
+    identity: {
+      username: `${users[args[1]]}`,
+      password: `${oauths[args[1]]}`,
+    },
+    channels: channels,
+  }
 }
 let chatbot = tmi.Client(Options2);
 if(chat){
@@ -104,14 +115,11 @@ client.on("disconnected", () => {
   console.log(`client disconneted from ${channels}`);
 });
 
-let join = false;
 
 function getBadges(tags) {
   let msg = "";
-  
   try {
-    for (let [key, value] of Object.entries(tags.badges)) {
-      //console.log(`${key}: ${value}`);
+    for (let [key] of Object.entries(tags.badges)) {
       if (key === "subscriber") key = `sub/`;
       else if (key === "moderator") key = `mod/`;
       else if (key === "vip") key = `vip/`;
@@ -162,16 +170,17 @@ process.stdout.on("resize" , () =>{
 })
 
 //let started = false;
-let messages = [];
-let uniquechatters = [];
+//let messages = [];
+//let uniquechatters = [];
 //let transtimeout = true;
-let nexttime = [];
-let t = [];
+//let nexttime = [];
+//let t = [];
 client.on("cheer", (channel, tags, message, self) =>{
   if(self) return
   let username = tags.username;
   writeToConsole(message, getBadges(tags), username);
 });
+let join = false;
 client.on("message", (channel, tags, message, self) => {
   if (self || message.substr(0, 1) === '!') return;
   let username = tags.username;
@@ -184,125 +193,48 @@ client.on("message", (channel, tags, message, self) => {
       writeToConsole(message, status, username);
     }
     else{
-      try {
-        let url = "https://translate.googleapis.com/translate_a/single?client=gtx&ie=UTF-8&oe=UTF-8&dt=bd&dt=ex&dt=ld&dt=md&dt=rw&dt=rm&dt=ss&dt=t&dt=at&dt=qc&sl=auto&tl=en&hl=en&q="
-        let options = {
-          method : `GET`,
-          headers:{
-            'Content-Type' : 'application/json'
-          }
+      translate.translate(message).then(raw =>{
+        let res = "";
+        for(let i = 0; i < raw[0].length; i++) {
+          if(raw[0][i][0] !== null)
+            res += raw[0][i][0];
         }
-        url += message;
-        url = encodeURI(url);
-        fetch(url, options).then(res => res.json()).then(alteredmessage =>{
-          let finalmessage = "";
-          for(let i = 0; i < alteredmessage[0].length; i++) {
-            if(alteredmessage[0][i][0] !== "null" && alteredmessage[0][i][0] !== null)
-              finalmessage += alteredmessage[0][i][0];
-          }
-          writeToConsole(finalmessage, status, username);
-        });
-      }catch {
-        console.log("something went wrong!! at b:125") ;
-      }
+        writeToConsole(res, status, username);
+      });
     }
   }
   else {
     writeToConsole(message, status, username);
   }
-  if(channel === '#'+mrStreamer){
-    let args = message.split(" ");
-    if(talk){
-      if(uniquechatters[tags.username] === undefined) uniquechatters[tags.username] = true;
-      if(!message.includes('$translate') && !message.includes('$transto')){
-        messages.push(["@"+tags.username.toLowerCase(), message]);
-      }
-
-      if(messages.length > 60) messages.shift();
-      if (args[0].toLowerCase() === "$translate") {
-        if(status.includes('mod') || status.includes('vip') || tags.username.toLowerCase() === mrStreamer.toLowerCase()){
-          if(uniquechatters[tags.username]){
-            if(args[1]){
-              messages.reverse();
-              let msg = "";
-              if(args[1].indexOf('@') >= 0){
-                for(let i = 0; i < messages.length; i++){
-                  if(messages[i][0].toLowerCase() === args[1].toLowerCase()){
-                    msg += messages[i][1];
-                    break;
-                  }
-                }
-              }
-              translate.translate(args, msg).then(trans => {
-                let finalmessage = "";
-                for(let i = 0; i < trans[0].length; i++) finalmessage += trans[0][i][0];
-                console.log(finalmessage)
-                client.say(mrStreamer, `@${tags.username} : ${finalmessage} `);
-              });
-              uniquechatters[tags.username] = false;
-              nexttime[tags.username] = 60;
-              t[tags.username] = setInterval(() => { nexttime[tags.username] -= 1}, 1000);
-              setTimeout(()=>{ uniquechatters[tags.username] = true; clearInterval(t[tags.username]) }, (60000))
-            }else{
-              client.say(mrStreamer, `@${tags.username} $translate [message or @username]`)
-            }
-          }else{
-            client.say(mrStreamer, `@${tags.username} ayo chill, for spamming and rate limiting purposes this ability is on cooldown for you, ${nexttime[tags.username]} seconds remaining`)
-          }
-        }else{
-          client.say(mrStreamer, ` @${tags.username} sorry, for spamming and rate limiting purposes you are not allowed to use this FeelsBadMan`);
-        }
-      }
-      args = message.toLowerCase().split(" ");
-      if (args[0] == "!trivia") {
-        client.say(mrStreamer, `feature currently disabled`)
-      }
-      if (tags.username.toLowerCase() === me && message.toLowerCase() === "!nospoil") {
+  let args = message.split(" ");
+  if(talk){
+    args = message.toLowerCase().split(" ");
+    if (args[0] == "!trivia") {
+      client.say(mrStreamer, `feature currently disabled`)
+    }
+    if (tags.username.toLowerCase() === me && message.toLowerCase() === "!nospoil") {
+      client.say(mrStreamer, "NOSPOIL");
+      setInterval(() => {
         client.say(mrStreamer, "NOSPOIL");
-        setInterval(() => {
-          client.say(mrStreamer, "NOSPOIL");
-        }, 50);
-      }
-      message = message.toLowerCase();
-      if (!join && tags.username.toLowerCase() === "streamelements" && message.includes(`enter by typing "!join"`)) {
-        setTimeout(() => {
-          client.say(mrStreamer, `!join`);
-        }, 5500);
-        setTimeout(() => {
-          join = false;
-        }, 40000);
-        join = true;
-      }
-
-
-      if (
-      message.toLowerCase().includes(`what's poppin`) ||
-        message.toLowerCase().includes(`whats poppin`)
-    ) {
-        setTimeout(() => {
-          client.say(mrStreamer, `@${tags.username} don't mind me just watching`);
-        }, 4000);
-      }
-
-      if (message.includes("zarga")) {
-        if (message.includes("stupid")) {
-          setTimeout(() => {
-            client.say(
-              mrStreamer,
-              `${tags.username} i presume that your presumption is Precisely incorrect and your diabolical mind is insufficiently cultivated To comprehend my Meaning `
-            );
-          }, 3000);
-          return;
-        }
-        if ((message.includes("thank") &&(message.includes("u") || message.includes("you"))) || message.includes("thnx") ||message.includes("merci") || message.includes("thnks")) {
-          client.say(mrStreamer, `@${tags.username} you are welcome :D`);
-          return;
-        }
-        if ( message.includes("hahaha") || message.includes("ahahah") || message.includes(`hhhaaa`) || message.includes(`aahahaah`)) {
-          client.say(mrStreamer, `@${tags.username} LUL`);
-          return;
-        }
-      }
+      }, 50);
+    }
+    message = message.toLowerCase();
+    if (!join && tags.username.toLowerCase() === "streamelements" && message.includes(`enter by typing "!join"`)) {
+      setTimeout(() => {
+        client.say(mrStreamer, `!join`);
+      }, 5500);
+      setTimeout(() => {
+        join = false;
+      }, 40000);
+      join = true;
+    }
+    if (
+    message.toLowerCase().includes(`what's poppin`) ||
+      message.toLowerCase().includes(`whats poppin`)
+  ) {
+      setTimeout(() => {
+        client.say(mrStreamer, `@${tags.username} don't mind me just watching`);
+      }, 4000);
     }
   }
 });
@@ -312,7 +244,8 @@ app.use(cors());
 app.use(express.json());
 app.post('/sendmessage', function (req, res) {
   let message = req.body.message;
-  chatbox.doTheThing(chatbot, message, mrStreamer, translate, client);
+  if (chat)
+    chatbox.parseTheThing(chatbot, message, mrStreamer, translate, client);
   res.json({'res': "ok"});
 })
 app.get('/chatbox', (req, res)=>{
