@@ -130,7 +130,6 @@ function getBadges(tags) {
 }
 
 
-let tagged;
 let messageCache = [];
 function writeToConsole(msg, status, username){
   let length = 15;
@@ -145,10 +144,8 @@ function writeToConsole(msg, status, username){
   }
   messageCache.push([username, msg]);
   if (messageCache.length > 100) messageCache.shift();
-  tagged = false;
-  if(msg.toLowerCase().indexOf('zarga') > -1) tagged = true;
+  if(msg.toLowerCase().indexOf('zarga') > -1) msg = chalk.red(msg);
   while (msg.length  !== 0 || username.length !== 0) {
-    if(tagged) msg = chalk.red(msg);
     if(status.indexOf("mod") > -1){
       console.log(`${space}${chalk.green(username.substr(0, length)+`|`)}${msg.substr(0, columnsLeft)}`);
     }else if(status.indexOf("vip") > -1){
