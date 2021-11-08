@@ -128,6 +128,10 @@ function getBadges(tags) {
   }
   return msg;
 }
+
+
+let tagged;
+let messageCache = [];
 function writeToConsole(msg, status, username){
   let length = 15;
   let space = "";
@@ -139,8 +143,12 @@ function writeToConsole(msg, status, username){
     console.error(`please resize the your terminal atleast ${length} width`);
     process.exit(0);
   }
-  if(msg.toLowerCase().indexOf('zarga') > -1) msg = chalk.red(msg);
+  messageCache.push([username, msg]);
+  if (messageCache.length > 100) messageCache.shift();
+  tagged = false;
+  if(msg.toLowerCase().indexOf('zarga') > -1) tagged = true;
   while (msg.length  !== 0 || username.length !== 0) {
+    if(tagged) msg = chalk.red(msg);
     if(status.indexOf("mod") > -1){
       console.log(`${space}${chalk.green(username.substr(0, length)+`|`)}${msg.substr(0, columnsLeft)}`);
     }else if(status.indexOf("vip") > -1){
@@ -237,7 +245,7 @@ app.use(express.json());
 app.post('/sendmessage', function (req, res) {
   let message = req.body.message;
   if (chat)
-    chatbox.parseTheThing(chatbot, message, mrStreamer, translate, client);
+    chatbox.parseTheThing(chatbot, message, mrStreamer, translate, messageCache);
   res.json({'res': "ok"});
 })
 app.get('/chatbox', (req, res)=>{

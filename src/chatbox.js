@@ -3,7 +3,8 @@ const { pickuplines, puns } = extra;
 let JAM = ["babyJAM", "catJAM", `Dance`];
 let ph = ``;
 let spamtheJAM = '';
-module.exports.parseTheThing = function (chatbot, message, mrStreamer, trans){
+let target = "";
+module.exports.parseTheThing = function (chatbot, message, mrStreamer, trans, messageCache){
     if(message.substr(0, 1) === '!'){
         message = message.substr(1, message.length - 1);
         let args = message.split(" ");
@@ -64,6 +65,25 @@ module.exports.parseTheThing = function (chatbot, message, mrStreamer, trans){
                     chatbot.say(mrStreamer, `${pickuplines[pos]}`);
                     pickuplines.splice(pos, 1);
                 }
+                break;
+            case "translate":
+                target = args[0];
+                for(let i = 0; i < messageCache.length; i++){
+                    let msg = messageCache[i][1];
+                    let username = messageCache[i][0];
+                    if (target === username){
+                        trans.translate(msg).then(msg => {
+                            let finalmessage = "";
+                            for(let i=0; i < msg[0].length; i++) 
+                            {
+                                if (msg[0][i][0] !== null)
+                                    finalmessage += msg[0][i][0] + ' ';
+                            }
+                            console.log(`${target} : ${finalmessage}`)
+                        });
+                    }
+                }
+                
                 break;
             default:
                 return;
