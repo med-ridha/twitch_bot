@@ -1,4 +1,5 @@
 const extra = require('./extra.js')
+const writeToConsole = require('./writeToConsole').writeToConsole;
 const { pickuplines, puns } = extra;
 let JAM = ["babyJAM", "catJAM", `Dance`];
 let ph = ``;
@@ -79,7 +80,8 @@ module.exports.parseTheThing = function (chatbot, message, mrStreamer, trans, me
                                 if (msg[0][i][0] !== null)
                                     finalmessage += msg[0][i][0] + ' ';
                             }
-                            console.log(`${target} : ${finalmessage}`)
+                            writeToConsole(finalmessage, "", target)
+                            //console.log(`${target} : ${finalmessage}`)
                         });
                     }
                 }

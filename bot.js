@@ -5,7 +5,7 @@ const chatbox = require('./src/chatbox.js');
 const express = require('express')
 const path = require('path');
 const tmi = require("tmi.js");
-const chalk = require('chalk');
+const writeToConsole = require('./src/writeToConsole.js').writeToConsole;
 //const trivia = require("./src/quiz.js");
 const translate = require("./src/translate.js");
 const args = process.argv.slice(2);
@@ -130,37 +130,6 @@ function getBadges(tags) {
 }
 
 
-let messageCache = [];
-function writeToConsole(msg, status, username){
-  let length = 15;
-  let space = "";
-  if(username.length < length){
-    space = Array(Math.abs((length+1) - username.length)).join(" ");
-  }
-  let columnsLeft = process.stdout.columns - (length+1);
-  if (columnsLeft < 0){
-    console.error(`please resize the your terminal atleast ${length} width`);
-    process.exit(0);
-  }
-  messageCache.push([username, msg]);
-  if (messageCache.length > 100) messageCache.shift();
-  if(msg.toLowerCase().indexOf('zarga') > -1) msg = chalk.red(msg);
-  while (msg.length  !== 0 || username.length !== 0) {
-    if(status.indexOf("mod") > -1){
-      console.log(`${space}${chalk.green(username.substr(0, length)+`|`)}${msg.substr(0, columnsLeft)}`);
-    }else if(status.indexOf("vip") > -1){
-      console.log(`${space}${chalk.magentaBright(username.substr(0, length)+`|`)}${msg.substr(0, columnsLeft)}`);
-    }else if(status.indexOf("sub") > -1){
-      console.log(`${space}${chalk.yellowBright(username.substr(0, length)+`|`)}${msg.substr(0, columnsLeft)}`);
-    }else {
-      console.log(`${space}${chalk.blue(username.substr(0, length)+`|`)}${msg.substr(0, columnsLeft)}`);
-    } 
-    msg = msg.substring(columnsLeft, msg.length);
-    username =username.substring(length, username.length);
-    space = Array(Math.abs((length+1) - username.length)).join(" ");
-  }
-}
-
 process.stdout.on("resize" , () =>{
   if(process.stdout.columns !== width){
     console.clear();
@@ -180,16 +149,24 @@ client.on("cheer", (channel, tags, message, self) =>{
   let username = tags.username;
   writeToConsole(message, getBadges(tags), username);
 });
+// for when the bot joins the raffle
 let join = false;
+let messageCache = [];
 client.on("message", (channel, tags, message, self) => {
   let username = tags.username;
+  //if the message was sent by a bot
   let isBot = false;
+  //if the message is a command
   let isCommand = false;
   if (message.substr(0, 1) === '!') isCommand = true;
-  if(username.toLowerCase() === `streamlabs` || username.toLowerCase() === `streamelements` || username.toLowerCase() === `nightbot`) isBot = true;
+  if(self || username.toLowerCase() === `streamlabs` || username.toLowerCase() === `streamelements` || username.toLowerCase() === `nightbot`) isBot = true;
   message = message.toString().replace(/\s+/g, ' ');
   message = message.toString().replace(/&/g, ' ');
   let status = getBadges(tags);
+
+  messageCache.push([username,message]);
+  if (messageCache.length > 100) messageCache.shift();
+
   if(translatethis){
     if(isCommand || isBot || status.includes('vip') || status.includes('mods')){
       writeToConsole(message, status, username);
