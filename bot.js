@@ -32,6 +32,7 @@ if(args.includes('--translate')){
 }
 
 
+
 if(args.includes('--autobot')){
     talk = true;
     args.splice(args.indexOf('--talk'), 1);
