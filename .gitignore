@@ -5,7 +5,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
-
+.todo
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
@@ -49,10 +49,10 @@ typings/
 
 # Optional npm cache directory
 .npm
-
+.gorbej
 # Optional eslint cache
 .eslintcache
-
+.eslintrc.json
 # Microbundle cache
 .rpt2_cache/
 .rts2_cache_cjs/
