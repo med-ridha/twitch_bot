@@ -7,7 +7,7 @@ const path = require('path');
 const tmi = require("tmi.js");
 const writeToConsole = require('./src/writeToConsole.js').writeToConsole;
 //const trivia = require("./src/quiz.js");
-const translate = require("./src/translate.js");
+//const translate = require("./src/translate.js");
 const args = process.argv.slice(2);
 const me = process.env.me
 
