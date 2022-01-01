@@ -12,6 +12,9 @@ module.exports.parseTheThing = function (chatbot, message, mrStreamer, trans, me
         let command = args.shift();
         let messageRaw = args.join(" ");
         switch(command.toLowerCase()){
+            case "trivia": 
+                // this feature not ready yet
+                break;
             case "send": case "s":
                 chatbot.say(mrStreamer, messageRaw);
                 break;
@@ -81,7 +84,6 @@ module.exports.parseTheThing = function (chatbot, message, mrStreamer, trans, me
                                     finalmessage += msg[0][i][0] + ' ';
                             }
                             writeToConsole(finalmessage, "", target)
-                            //console.log(`${target} : ${finalmessage}`)
                         });
                     }
                 }

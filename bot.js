@@ -167,7 +167,7 @@ client.on("message", (channel, tags, message, self) => {
   if (messageCache.length > 100) messageCache.shift();
 
   if(translatethis){
-    if(isCommand || isBot || status.includes('vip') || status.includes('mods')){
+    if(isCommand || isBot /*|| status.includes('vip') || status.includes('mods')*/){
       writeToConsole(message, status, username);
     }
     else{
