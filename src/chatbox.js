@@ -12,9 +12,6 @@ module.exports.parseTheThing = function (chatbot, message, mrStreamer, trans, me
         let command = args.shift();
         let messageRaw = args.join(" ");
         switch(command.toLowerCase()){
-            case "trivia": 
-                // this feature not ready yet
-                break;
             case "send": case "s":
                 chatbot.say(mrStreamer, messageRaw);
                 break;

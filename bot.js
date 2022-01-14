@@ -1,12 +1,12 @@
 require('/home/ridha/src/twitch_bot/node_modules/dotenv').config()
 const { spawn } = require("child_process");
 const cors = require('cors');
+const trivia = require("./src/quiz.js");
 const chatbox = require('./src/chatbox.js');
 const express = require('express')
 const path = require('path');
 const tmi = require("tmi.js");
 const writeToConsole = require('./src/writeToConsole.js').writeToConsole;
-//const trivia = require("./src/quiz.js");
 const translate = require("./src/translate.js");
 const args = process.argv.slice(2);
 const me = process.env.me
@@ -31,7 +31,7 @@ if(args.includes('--translate')){
   args.splice(args.indexOf('--translate'), 1);
 }
 
-if(args.includes('--autobot')){
+if(args.includes('--talk')){
     talk = true;
     args.splice(args.indexOf('--talk'), 1);
 }
@@ -111,6 +111,12 @@ client.on("disconnected", () => {
 });
 
 
+function checkIsBot(username){
+  //tmi client doesn't have a tag for bots :(
+  return username == "streamelements" ||
+          username == "nightbot";
+}
+
 function getBadges(tags) {
   let msg = "";
   try {
@@ -137,12 +143,6 @@ process.stdout.on("resize" , () =>{
   }
 })
 
-//let started = false;
-//let messages = [];
-//let uniquechatters = [];
-//let transtimeout = true;
-//let nexttime = [];
-//let t = [];
 client.on("cheer", (channel, tags, message, self) =>{
   if(self) return
   let username = tags.username;
@@ -153,12 +153,10 @@ let join = false;
 let messageCache = [];
 client.on("message", (channel, tags, message, self) => {
   let username = tags.username;
-  //if the message was sent by a bot
   let isBot = false;
-  //if the message is a command
   let isCommand = false;
-  if (message.substr(0, 1) === '!') isCommand = true;
-  if(self || username.toLowerCase() === `streamlabs` || username.toLowerCase() === `streamelements` || username.toLowerCase() === `nightbot`) isBot = true;
+  if (message.substr(0, 1) === '!') {isCommand = true;}
+  if (self || checkIsBot(username.toLowerCase())) {isBot = true;}
   message = message.toString().replace(/\s+/g, ' ');
   message = message.toString().replace(/&/g, ' ');
   let status = getBadges(tags);
@@ -188,8 +186,8 @@ client.on("message", (channel, tags, message, self) => {
   let args = message.split(" ");
   if(talk){
     args = message.toLowerCase().split(" ");
-    if (args[0] == "!trivia") {
-      client.say(mrStreamer, `feature currently disabled`)
+    if (args[0] === `!trivia` || args[0] === `!t`){
+      trivia.gameManager(args, status, client, mrStreamer, username);
     }
     message = message.toLowerCase();
     if (!join && tags.username.toLowerCase() === "streamelements" && message.includes(`enter by typing "!join"`)) {

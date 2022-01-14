@@ -1,6 +1,7 @@
 const fetch = require('node-fetch');
 const database = require('./database.js');
 let db;
+let started = false;
 let categories ;
 let timer = null;
 let quiz = null;
@@ -120,7 +121,6 @@ function more(client, mrStreamer) {
         }, 3000);
     }
 }
-let started = false;
 
 function startTrivia(client, mrStreamer) {
     if (started) {
@@ -300,7 +300,7 @@ function scoreBoard(client, mrStreamer) {
 }
 
 function info (client, mrStreamer){
-    let msg = "only mods and the streamer can controll the game. players can join by typing !t and the answer number, the question lasts for 15 seconds, correct answer +1, wrong answer -1, u can't change your answer once submitted. you can see all time scores with !scoreboard";
+    let msg = "only mods and the streamer can controll the game. players can join by typing !t and the answer number, the question lasts for 15 seconds, correct answer +1, wrong answer -1, u can't change your answer once submitted. you can see all time scores with '!trivia scoreboard'";
     client.say(mrStreamer, `${msg}`);
 }
 
