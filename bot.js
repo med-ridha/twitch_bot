@@ -1,7 +1,7 @@
 require('/home/ridha/src/twitch_bot/node_modules/dotenv').config()
 const { spawn } = require("child_process");
 const cors = require('cors');
-const trivia = require("./src/quiz.js");
+const trivia = require("./src/trivia.js");
 const chatbox = require('./src/chatbox.js');
 const express = require('express')
 const path = require('path');
@@ -16,24 +16,24 @@ let talk = false;
 let chat = false;
 let width = process.stdout.columns;
 
-if(args.includes('--users')){
+if (args.includes('--users')) {
   console.log(`user1 ${process.env.user1}\nuser2 ${process.env.user2}\nuser3 ${process.env.user3}`)
   process.exit(0)
 }
-if(args.includes('--chat-box')){
+if (args.includes('--chat-box')) {
   chat = true;
   talk = true;
   args.splice(args.indexOf('--chat-box'), 1);
 }
 
-if(args.includes('--translate')){
+if (args.includes('--translate')) {
   translatethis = true;
   args.splice(args.indexOf('--translate'), 1);
 }
 
-if(args.includes('--talk')){
-    talk = true;
-    args.splice(args.indexOf('--talk'), 1);
+if (args.includes('--talk')) {
+  talk = true;
+  args.splice(args.indexOf('--talk'), 1);
 }
 let mrStreamer = args[0] || me;
 if (!args[1] || chat) {
@@ -67,8 +67,8 @@ let Options2 = {
   channels: [],
 }
 let Options = {};
-if(args[1] === 'nouser' && !chat){
-   Options = {
+if (args[1] === 'nouser' && !chat) {
+  Options = {
     options: { debug: false, messagesLogLevel: "info" },
     connection: {
       reconnect: true,
@@ -76,8 +76,8 @@ if(args[1] === 'nouser' && !chat){
     },
     channels: channels,
   }
-}else{
-   Options = {
+} else {
+  Options = {
     options: { debug: false, messagesLogLevel: "info" },
     connection: {
       reconnect: true,
@@ -91,7 +91,7 @@ if(args[1] === 'nouser' && !chat){
   }
 }
 let chatbot = tmi.Client(Options2);
-if(chat){
+if (chat) {
   chatbot.connect().catch(console.error);
   chatbot.on("connected", () => {
     console.log(`chat bot connected to ${me} as ${users[args[1]]}`);
@@ -111,10 +111,10 @@ client.on("disconnected", () => {
 });
 
 
-function checkIsBot(username){
+function checkIsBot(username) {
   //tmi client doesn't have a tag for bots :(
   return username == "streamelements" ||
-          username == "nightbot";
+    username == "nightbot";
 }
 
 function getBadges(tags) {
@@ -135,16 +135,16 @@ function getBadges(tags) {
 }
 
 
-process.stdout.on("resize" , () =>{
-  if(process.stdout.columns !== width){
+process.stdout.on("resize", () => {
+  if (process.stdout.columns !== width) {
     console.clear();
     console.log('resizing the console will clear it to prevent ugly messages')
     width = process.stdout.columns;
   }
 })
 
-client.on("cheer", (channel, tags, message, self) =>{
-  if(self) return
+client.on("cheer", (channel, tags, message, self) => {
+  if (self) return
   let username = tags.username;
   writeToConsole(message, getBadges(tags), username);
 });
@@ -155,24 +155,24 @@ client.on("message", (channel, tags, message, self) => {
   let username = tags.username;
   let isBot = false;
   let isCommand = false;
-  if (message.substr(0, 1) === '!') {isCommand = true;}
-  if (self || checkIsBot(username.toLowerCase())) {isBot = true;}
+  if (message.substr(0, 1) === '!') { isCommand = true; }
+  if (self || checkIsBot(username.toLowerCase())) { isBot = true; }
   message = message.toString().replace(/\s+/g, ' ');
   message = message.toString().replace(/&/g, ' ');
   let status = getBadges(tags);
 
-  messageCache.push([username,message]);
+  messageCache.push([username, message]);
   if (messageCache.length > 100) messageCache.shift();
 
-  if(translatethis){
-    if(isCommand || isBot /*|| status.includes('vip') || status.includes('mods')*/){
+  if (translatethis) {
+    if (isCommand || isBot /*|| status.includes('vip') || status.includes('mods')*/) {
       writeToConsole(message, status, username);
     }
-    else{
-      translate.translate(message).then(raw =>{
+    else {
+      translate.translate(message).then(raw => {
         let res = "";
-        for(let i = 0; i < raw[0].length; i++) {
-          if(raw[0][i][0] !== null)
+        for (let i = 0; i < raw[0].length; i++) {
+          if (raw[0][i][0] !== null)
             res += raw[0][i][0];
         }
         writeToConsole(res, status, username);
@@ -184,9 +184,9 @@ client.on("message", (channel, tags, message, self) => {
   }
   if (self) return;
   let args = message.split(" ");
-  if(talk){
+  if (talk) {
     args = message.toLowerCase().split(" ");
-    if (args[0] === `!trivia` || args[0] === `!t`){
+    if (args[0] === `!trivia` || args[0] === `!t`) {
       trivia.gameManager(args, status, client, mrStreamer, username);
     }
     message = message.toLowerCase();
@@ -200,9 +200,9 @@ client.on("message", (channel, tags, message, self) => {
       join = true;
     }
     if (
-    message.toLowerCase().includes(`what's poppin`) ||
+      message.toLowerCase().includes(`what's poppin`) ||
       message.toLowerCase().includes(`whats poppin`)
-  ) {
+    ) {
       setTimeout(() => {
         client.say(mrStreamer, `@${tags.username} don't mind me just watching`);
       }, 4000);
@@ -213,16 +213,16 @@ client.on("message", (channel, tags, message, self) => {
 const app = express()
 app.use(cors());
 app.use(express.json());
-app.post('/sendmessage', function (req, res) {
+app.post('/sendmessage', function(req, res) {
   let message = req.body.message;
   if (chat)
     chatbox.parseTheThing(chatbot, message, mrStreamer, translate, messageCache);
-  res.json({'res': "ok"});
+  res.json({ 'res': "ok" });
 })
-app.get('/chatbox', (req, res)=>{
+app.get('/chatbox', (_, res) => {
   res.sendFile(path.join(__dirname, './chatbox.html'));
 })
-app.get('/getID', function (req, res) {
+app.get('/getID', function(_, res) {
   let data = {
     streamer: mrStreamer,
     user: users[args[1]]
@@ -230,7 +230,7 @@ app.get('/getID', function (req, res) {
   res.json(data);
 })
 
-app.post('/changeStreamer',  (req, res)=>{
+app.post('/changeStreamer', (req, res) => {
   mrStreamer = req.body.message.split(" ")[1];
   Options = {
     options: { debug: false, messagesLogLevel: "info" },
@@ -246,10 +246,11 @@ app.post('/changeStreamer',  (req, res)=>{
   }
   client = new tmi.client(Options);
   client.connect()
-    .then(()=>{
+    .then(() => {
       console.log(`connected to ${mrStreamer}`);
     })
-    .then(() => res.json({'res': 'ok'}))
+    .then(() => res.json({ 'res': 'ok' }))
     .catch(console.error)
 })
 app.listen(1337);
+
