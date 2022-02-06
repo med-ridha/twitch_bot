@@ -66,12 +66,12 @@ h5, span{
             let msg = {message : v};
             document.getElementById('msg').value="";
             let options = {
-            method: 'POST',
-            headers: {
-                'Content-Type':'application/json',
-            },
-            body: JSON.stringify(msg)
-        }
+                    method: 'POST',
+                    headers: {
+                                'Content-Type':'application/json',
+                            },
+                    body: JSON.stringify(msg)
+               }
             fetch(url, options).then(res => {res.json()}).then(res => {console.log(res); loadEnviroment();});
         }
         loadEnviroment();

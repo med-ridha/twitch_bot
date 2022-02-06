@@ -114,7 +114,8 @@ client.on("disconnected", () => {
 function checkIsBot(username) {
   //tmi client doesn't have a tag for bots :(
   return username == "streamelements" ||
-    username == "nightbot";
+    username == "nightbot" ||
+    username == "streamlabs";
 }
 
 function getBadges(tags) {
@@ -143,7 +144,7 @@ process.stdout.on("resize", () => {
   }
 })
 
-client.on("cheer", (channel, tags, message, self) => {
+client.on("cheer", (_, tags, message, self) => {
   if (self) return
   let username = tags.username;
   writeToConsole(message, getBadges(tags), username);
@@ -151,11 +152,11 @@ client.on("cheer", (channel, tags, message, self) => {
 // for when the bot joins the raffle
 let join = false;
 let messageCache = [];
-client.on("message", (channel, tags, message, self) => {
+client.on("message", (_, tags, message, self) => {
   let username = tags.username;
   let isBot = false;
   let isCommand = false;
-  if (message.substr(0, 1) === '!') { isCommand = true; }
+  if (message.substring(0, 1) === '!') { isCommand = true; }
   if (self || checkIsBot(username.toLowerCase())) { isBot = true; }
   message = message.toString().replace(/\s+/g, ' ');
   message = message.toString().replace(/&/g, ' ');
