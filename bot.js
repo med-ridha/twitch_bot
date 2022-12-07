@@ -1,7 +1,7 @@
 require('/home/ridha/src/twitch_bot/node_modules/dotenv').config()
 const { spawn } = require("child_process");
 const cors = require('cors');
-const trivia = require("./src/trivia.js");
+// const trivia = require("./src/trivia.js");
 const chatbox = require('./src/chatbox.js');
 const express = require('express')
 const path = require('path');
@@ -10,7 +10,6 @@ const writeToConsole = require('./src/writeToConsolev2.js').writeToConsole;
 const translate = require("./src/translate.js");
 const args = process.argv.slice(2);
 const me = process.env.me
-
 let translatethis = false;
 let talk = false;
 let chat = false;
@@ -36,7 +35,7 @@ if (args.includes('--talk')) {
   args.splice(args.indexOf('--talk'), 1);
 }
 let mrStreamer = args[0] || me;
-if (!args[1] || chat) {
+if (!args[1]) {
   args[1] = 'user1';
 }
 
