@@ -1,5 +1,5 @@
 const extra = require('./extra.js')
-const writeToConsole = require('./writeToConsole').writeToConsole;
+const writeToConsole = require('./writeToConsolev2').writeToConsole;
 const { pickuplines, puns } = extra;
 let JAM = ["babyJAM", "catJAM", `Dance`];
 let ph = ``;
@@ -12,7 +12,7 @@ module.exports.parseTheThing = function (chatbot, message, mrStreamer, trans, me
         let command = args.shift();
         let messageRaw = args.join(" ");
         switch(command.toLowerCase()){
-            case "send": case "s":
+            case "say": case "send": case "s":
                 chatbot.say(mrStreamer, messageRaw);
                 break;
             case "transto":
@@ -87,6 +87,7 @@ module.exports.parseTheThing = function (chatbot, message, mrStreamer, trans, me
                 
                 break;
             default:
+                console.log("Command not found")
                 return;
         }
     }
