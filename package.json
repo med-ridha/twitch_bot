@@ -4,7 +4,7 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "start": "node bot.js"
+        "start": "node --no-warnings bot.js"
     },
     "keywords": [],
     "author": "",
