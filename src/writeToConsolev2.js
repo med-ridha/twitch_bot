@@ -33,6 +33,7 @@ module.exports.writeToConsole = function (message, status, username){
         }
         while(words.length > 0 && remainingWidth > 0){
             if (words[0] !== undefined && words[0].length > width){
+                process.stdout.write("\n")
                 writeTo.writeToConsole(words[0], status, username);
                 words.shift();
             } else if (words[0] !== undefined && (words[0].length) < remainingWidth){
@@ -47,7 +48,8 @@ module.exports.writeToConsole = function (message, status, username){
                 break;
             }
         }
-        console.log();
+        //console.log();
+        process.stdout.write("\n")
         borrowUsername = borrowUsername.substring(usernameSpace, borrowUsername.length);
         space = Array(Math.abs((usernameSpace+1) - borrowUsername.length)).join(" ");
         if (counter > 100) process.exit(1);

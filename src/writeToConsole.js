@@ -40,7 +40,8 @@ module.exports.writeToConsole = function (msg, status, username){
       else 
         process.stdout.write(`${msg.substr(0, width)}`)
     } 
-    console.log();
+    //console.log();
+    process.stdout.write("\n")
     msg = msg.substring(width, msg.length);
     username =username.substring(length, username.length);
     space = Array(Math.abs((length+1) - username.length)).join(" ");
