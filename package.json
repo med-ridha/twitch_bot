@@ -23,7 +23,7 @@
         "twitch": "^4.6.4",
         "twitch-auth": "^4.6.4",
         "twitch-eventsub": "^4.5.5",
-        "twitch-webhooks": "^4.5.5",
+        "twitch-webhooks": "^4.0.12",
         "unirest": "^0.6.0"
     },
     "devDependencies": {
