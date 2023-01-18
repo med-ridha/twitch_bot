@@ -3,10 +3,13 @@ const { spawn } = require("child_process");
 const cors = require('cors');
 // const trivia = require("./src/trivia.js");
 const chatbox = require('./src/chatbox.js');
+const screen = require('./src/screen.js')
+
+
 const express = require('express')
 const path = require('path');
 const tmi = require("tmi.js");
-const writeToConsole = require('./src/writeToConsolev2.js').writeToConsole;
+//const writeToConsole = require('./src/writeToConsolev2.js').writeToConsole;
 const translate = require("./src/translate.js");
 const args = process.argv.slice(2);
 const me = process.env.me
@@ -154,15 +157,14 @@ process.stdout.on("resize", () => {
 client.on("cheer", (_, tags, message, self) => {
     if (self) return
     let username = tags.username;
-    writeToConsole(message, getBadges(tags), username);
+    //writeToConsole(message, getBadges(tags), username);
+    screen.addMessage(message, tags)
 });
 // for when the bot joins the raffle
 let join = false;
 let messageCache = [];
 client.on("message", (_, tags, message, self) => {
-    let username = tags.username;
-    let isBot = false;
-    let isCommand = false;
+    let username = tags.username; let isBot = false; let isCommand = false;
     if (message.substring(0, 1) === '!') { isCommand = true; }
     if (self || checkIsBot(username.toLowerCase())) { isBot = true; }
     message = message.toString().replace(/\s+/g, ' ');
@@ -174,7 +176,8 @@ client.on("message", (_, tags, message, self) => {
 
     if (translatethis) {
         if (isCommand || isBot /*|| status.includes('vip') || status.includes('mods')*/) {
-            writeToConsole(message, status, username);
+            //writeToConsole(message, status, username);
+            screen.addMessage(message, tags)
         }
         else {
             translate.translate(message).then(raw => {
@@ -183,12 +186,14 @@ client.on("message", (_, tags, message, self) => {
                     if (raw[0][i][0] !== null)
                         res += raw[0][i][0];
                 }
-                writeToConsole(res, status, username);
+                //writeToConsole(res, status, username);
+                screen.addMessage(message, tags)
             });
         }
     }
     else {
-        writeToConsole(message, status, username);
+        //writeToConsole(message, status, username);
+        screen.addMessage(message, tags)
     }
     if (self) return;
     let args = message.split(" ");

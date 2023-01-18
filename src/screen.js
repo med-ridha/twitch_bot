@@ -1,0 +1,216 @@
+const blessed = require('blessed');
+const chalk = require('chalk')
+let error = null;
+
+const screen = blessed.screen({
+    smartCSR: true,
+    title: 'twitch chat',
+});
+
+const box = blessed.scrollablebox({
+    top: 'top',
+    left: 'center',
+    width: '100%',
+    height: '80%',
+    tags: true,
+    border: {
+        type: 'line'
+    },
+    style: {
+        fg: 'white',
+        bg: 'black',
+        border: {
+            fg: 'grey'
+        },
+    }
+});
+const errorMessage = blessed.message({
+    parent: screen,
+    top: 'center',
+    left: 'center',
+    width: '50%',
+    height: 'shrink',
+    border: {
+        type: 'line'
+    },
+    style: {
+        fg: 'white',
+        bg: 'red',
+        border: {
+            fg: '#f0f0f0'
+        },
+    }
+});
+
+const input = blessed.textarea({
+    bottom: 0,
+    left: 'center',
+    width: '100%',
+    height: '20%',
+    inputOnFocus: true,
+    border: {
+        type: 'line',
+    },
+    style: {
+        fg: 'white',
+        bg: 'black',
+        border: {
+            fg: 'red'
+        },
+    }
+});
+
+function getBadges(tags) {
+    let msg = "";
+    let count = 0;
+    try {
+        for (let [key] of Object.entries(tags.badges)) {
+            if (key === "subscriber" || key === "founder") { key = chalk.yellow(`[❤️️]`); count += 3 }
+            else if (key === "moderator") { key = chalk.green(`[♔]`); count += 3 }
+            else if (key === "vip") { key = chalk.magenta(`[◆]`); count += 3 }
+            else if (key === "verified") { key = chalk.blue(`[✓]`); count += 3 }
+            else if (key === "bits") { key = chalk.red(`[¢]`); count += 3 }
+            else if (key === "staff") { key = chalk.cyan(`[✯]`); count += 3 }
+            else if (key === "premium") { key = chalk.red(`[ᴴ]`); count += 3 }
+            else if (key === "global_mod") { key = chalk.cyan(`[╀]`); count += 3 }
+            else if (key === "broadcaster") { key = chalk.red(`[⬤]`); count += 3 }
+            else if (key === "admin") { key = chalk.red(`[✪]`); count += 3 }
+            else if (key === "turbo") { key = chalk.blue(`[➠]`); count += 3 }
+            else key = "";
+            msg += `${key}`;
+        }
+    } catch (e) {
+        msg += "";
+    }
+    return [msg, count];
+}
+
+module.exports.addMessage = (message, tags) => {
+    try {
+        let [status, count] = getBadges(tags)
+        let color = tags.color ? tags.color : '#FFFFFF'
+        let username = tags.username;
+        let space = Array(Math.abs(30 - username.length)).join(' ');
+        let statusSpace = Array(Math.abs(10 - count)).join(' ');
+        let time = new Date().toLocaleTimeString().split(':').slice(0, 2).join(':');
+        let totalSpace = Array(51).join(' ');
+        let width = 1 + (box.width - totalSpace.length);
+        let tagged = false
+        tagged = message.indexOf('zarga') > -1;
+        let i = 0;
+        let firstHalf = `${time} ${statusSpace}${status}${chalk.hex(color)(username)}${space}`
+        while (message.length > 0) {
+            if (i > 0) {
+                totalSpace = Array(45).join(' ');
+            }else {
+                totalSpace = Array(0).join(' ');
+            }
+            if (tagged) {
+                box.pushLine(`${totalSpace}${firstHalf}:${chalk.red(message.substring(0, width))}`);
+            }else {
+                box.pushLine(`${totalSpace}${firstHalf}:${message.substring(0, width)}`);
+            }
+            firstHalf = "";
+            i += 1;
+            message = message.substring(width);
+        }
+        if (box.getScrollHeight() >= 20) {
+            box.deleteTop();
+        }
+        screen.render();
+
+    } catch (err) {
+        this.handleError(err);
+    }
+}
+screen.key('q', function(ch, key) {
+    return process.exit(0);
+});
+
+screen.key(['enter', 'i', 'a'], function(ch, key) {
+    input.focus();
+});
+
+input.key('enter', function(ch, key) {
+    let value = input.getValue();
+    value = value.replace(/\n/g, '');
+    box.insertBottom(value);
+    input.clearValue();
+    input.resetScroll();
+    screen.render();
+});
+
+
+screen.key('e', function(_ch, _key) {
+    if (error != null) {
+        error.focus();
+    }
+})
+
+screen.append(box);
+screen.append(input);
+screen.remove(errorMessage)
+
+screen.render();
+
+screen.key('r', function(ch, key) {
+    screen.realloc();
+    screen.render();
+    screen.append(box);
+    screen.append(input);
+    screen.render();
+});
+
+function createError(error) {
+    return blessed.message({
+        parent: screen,
+        top: 'center',
+        left: 'center',
+        width: '50%',
+        height: 'shrink',
+        content: error,
+        border: {
+            type: 'line'
+        },
+        style: {
+            fg: 'white',
+            bg: 'black',
+            border: {
+                fg: '#f0f0f0'
+            },
+            focus: {
+                border: {
+                    bg: 'red'
+                }
+            }
+        }
+    })
+}
+module.exports.handleError = (errorMessage) => {
+    try {
+        error = createError(`${errorMessage} \n\t press any key to close (not q)`);
+        screen.append(error)
+        error.focus();
+        screen.render();
+        error.addListener('keypress', (_ch, _key) => {
+            try {
+                screen.remove(error);
+                error.destroy();
+                error = null;
+                screen.render();
+            } catch (err) {
+                // TODO: handle error
+            }
+        })
+        setTimeout(() => {
+            if (error != null) {
+                screen.remove(error);
+                error.destroy();
+                error = null;
+                screen.render();
+            }
+        }, 5000)
+    } catch (err) {
+        this.handleError(err + " in error handler line 185")
+    }
+}

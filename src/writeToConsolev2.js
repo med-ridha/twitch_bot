@@ -18,6 +18,7 @@ module.exports.writeToConsole = function (message, status, username){
     let words = message.split(" ");
     let counter = 0;
     let borrowUsername = username;
+    // eslint-disable-next-line no-constant-condition
     while (true){
         counter += 1;
         if (words.length <= 0 && borrowUsername.length <= 0) break;
