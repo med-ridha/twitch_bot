@@ -1,16 +1,43 @@
 const blessed = require('blessed');
 const chalk = require('chalk')
+const followers = require('../followers.js')
 let error = null;
 
 const screen = blessed.screen({
     smartCSR: true,
     title: 'twitch chat',
 });
-
-const box = blessed.scrollablebox({
+const list = blessed.list({
+    parent: screen,
+    scrollable: true,
+    top: 0,
+    right: 0,
+    width: '20%',
+    height: '100%',
+    border: {
+        type: 'line'
+    },
+    keys: true,
+    vi: true,
+    search: false,
+    style: {
+        fg: 'white',
+        bg: 'black',
+        border: {
+            fg: '#f0f0f0'
+        },
+        focus: {
+            border: {
+                bg: 'grey'
+            }
+        }
+    }
+})
+const box = blessed.box({
+    scrollable: true,
     top: 'top',
-    left: 'center',
-    width: '100%',
+    left: 0,
+    width: '80%',
     height: '80%',
     tags: true,
     border: {
@@ -44,8 +71,8 @@ const errorMessage = blessed.message({
 
 const input = blessed.textarea({
     bottom: 0,
-    left: 'center',
-    width: '100%',
+    left: 0,
+    width: '80%',
     height: '20%',
     inputOnFocus: true,
     border: {
@@ -102,20 +129,18 @@ module.exports.addMessage = (message, tags) => {
         while (message.length > 0) {
             if (i > 0) {
                 totalSpace = Array(45).join(' ');
-            }else {
+            } else {
                 totalSpace = Array(0).join(' ');
             }
             if (tagged) {
                 box.pushLine(`${totalSpace}${firstHalf}:${chalk.red(message.substring(0, width))}`);
-            }else {
+            } else {
                 box.pushLine(`${totalSpace}${firstHalf}:${message.substring(0, width)}`);
             }
+            if (box.getScrollHeight() >= 20) { box.deleteTop(); }
             firstHalf = "";
             i += 1;
             message = message.substring(width);
-        }
-        if (box.getScrollHeight() >= 20) {
-            box.deleteTop();
         }
         screen.render();
 
@@ -127,9 +152,10 @@ screen.key('q', function(ch, key) {
     return process.exit(0);
 });
 
-screen.key(['enter', 'i', 'a'], function(ch, key) {
+screen.key(['i', 'a'], function(ch, key) {
     input.focus();
 });
+
 
 input.key('enter', function(ch, key) {
     let value = input.getValue();
@@ -147,11 +173,14 @@ screen.key('e', function(_ch, _key) {
     }
 })
 
+screen.key('esc', function(_ch, _key) {
+   screen.focus()
+})   
+
 screen.append(box);
 screen.append(input);
 screen.remove(errorMessage)
 
-screen.render();
 
 screen.key('r', function(ch, key) {
     screen.realloc();
@@ -214,3 +243,54 @@ module.exports.handleError = (errorMessage) => {
         this.handleError(err + " in error handler line 185")
     }
 }
+
+list.key('n', function(ch, key) {
+    if (followersList[cursor + 1] !== undefined) {
+        list.clearItems();
+        cursor += 1;
+        for (let follower of followersList[cursor]) {
+            list.add(follower.to_name);
+        }
+    } else {
+        followers.getFollowers().then((result) => {
+            if (result.length > 0) {
+                list.clearItems();
+                for (let follower of result) {
+                    list.add(follower.to_name);
+                }
+                followersList.push(result)
+                cursor += 1;
+            }
+            screen.render();
+        })
+    }
+})
+let cursor = 0;
+list.key('p', function(ch, key) {
+    if (cursor > 0) {
+        list.clearItems();
+        cursor -= 1
+        for (let follower of followersList[cursor]) {
+            list.add(follower.to_name);
+        }
+        screen.render();
+    }
+});
+
+list.on('select', function(item, index) {
+    module.exports.handleError(item.content);
+    screen.render();
+});
+
+let followersList = [];
+
+followers.getFollowers().then((followers) => {
+    for (let follower of followers) {
+        list.add(follower.to_name);
+    }
+    followersList.push(followers)
+    console.log(followersList)
+    screen.render();
+})
+box.focus();
+screen.render();
