@@ -140,7 +140,7 @@ module.exports.addMessage = (message, tags) => {
             } else {
                 box.pushLine(`${totalSpace}${firstHalf}:${message.substring(0, width)}`);
             }
-            if (box.getScrollHeight() >= 20) { box.deleteTop(); }
+            if (box.getScrollHeight() >= 24) { box.deleteTop(); }
             firstHalf = "";
             i += 1;
             message = message.substring(width);
@@ -260,21 +260,28 @@ list.on('select', function(item, index) {
     module.exports.handleError(item.content);
     screen.render();
 });
-
-followers.getLiveFollowers().then((result) => {
-    let items = new Array(); 
-    for (let follower of result) {
-        items.push({user_name: follower.user_name , viewer_count :follower.viewer_count})
-    }
-    items.sort( (a, b) => {
-        return b.viewer_count - a.viewer_count;
+function setLiveFollowes() {
+    followers.getLiveFollowers().then((result) => {
+        list.clearItems()
+        let items = new Array(); 
+        for (let follower of result) {
+            items.push({user_name: follower.user_name , viewer_count :follower.viewer_count})
+        }
+        items.sort( (a, b) => {
+            return b.viewer_count - a.viewer_count;
+        })
+        for (let f of items) {
+            list.add(f.user_name + "| " + `${chalk.red(f.viewer_count)}`)
+        }
+        loading.stop();
+        screen.render();
     })
-    for (let f of items) {
-        list.add(f.user_name + "| " + f.viewer_count)
-    }
-    loading.stop();
-    screen.render();
-})
+}
+setLiveFollowes()
+setInterval(() => {
+    setLiveFollowes()
+    console.log('282')
+}, (1000 * 60) * 5)
 box.focus();
 
 screen.render();

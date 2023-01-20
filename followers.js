@@ -31,7 +31,9 @@ let config = {
     },
 }
 async function getLiveFollowers() {
-    followers = await getAllFollowers();
+    if (followers.length === 0) {
+        followers = await getAllFollowers();
+    }
     let liveFollowers = new Array();
     let j = 100;
     let i = 0;
