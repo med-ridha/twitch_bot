@@ -34,6 +34,7 @@ const list = blessed.list({
     }
 })
 const box = blessed.box({
+    label: 'chat',
     scrollable: true,
     top: 'top',
     left: 0,
@@ -70,6 +71,7 @@ const errorMessage = blessed.message({
 });
 
 const input = blessed.textarea({
+    label: 'Write stuff',
     bottom: 0,
     left: 0,
     width: '80%',
@@ -174,8 +176,8 @@ screen.key('e', function(_ch, _key) {
 })
 
 screen.key('esc', function(_ch, _key) {
-   screen.focus()
-})   
+    screen.focus()
+})
 
 screen.append(box);
 screen.append(input);
@@ -243,7 +245,15 @@ module.exports.handleError = (errorMessage) => {
         this.handleError(err + " in error handler line 185")
     }
 }
-
+const loading = blessed.loading ({
+    parent: list,
+    top: 'center',
+    left: 'center',
+    width: '90%',
+    height: 'shrink',
+    border: 'line',
+    content: 'fetching data... ',
+})
 list.key('n', function(ch, key) {
     if (followersList[cursor + 1] !== undefined) {
         list.clearItems();
@@ -251,6 +261,7 @@ list.key('n', function(ch, key) {
         for (let follower of followersList[cursor]) {
             list.add(follower.to_name);
         }
+        screen.render()
     } else {
         followers.getFollowers().then((result) => {
             if (result.length > 0) {
@@ -283,14 +294,16 @@ list.on('select', function(item, index) {
 });
 
 let followersList = [];
-
 followers.getFollowers().then((followers) => {
-    for (let follower of followers) {
-        list.add(follower.to_name);
-    }
-    followersList.push(followers)
-    console.log(followersList)
-    screen.render();
+    setTimeout(() => {
+        for (let follower of followers) {
+            list.add(follower.to_name);
+        }
+        followersList.push(followers)
+        loading.stop();
+        screen.render();
+
+    }, 5000)
 })
 box.focus();
 screen.render();

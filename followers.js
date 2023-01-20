@@ -31,7 +31,7 @@ let config = {
 }
 module.exports.getFollowers = async () => {
     if (count  != totalFollowers || totalFollowers == 0) {
-        const listFollowersURL = `https://api.twitch.tv/helix/users/follows?from_id=${user_id}&after=${cursor}`;
+        const listFollowersURL = `https://api.twitch.tv/helix/users/follows?from_id=${user_id}&first=100&after=${cursor}`;
         let rawResult = await fetch(listFollowersURL, config);
         let result = await rawResult.json();
         if (result.error === 'Unauthorized') {
