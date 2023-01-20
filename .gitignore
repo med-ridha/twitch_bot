@@ -1,5 +1,5 @@
 # Logs
-accesstoken.txt
+.accesstoken.txt
 logs
 *.log
 npm-debug.log*
