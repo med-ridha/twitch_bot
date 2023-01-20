@@ -8,6 +8,7 @@ const screen = blessed.screen({
     title: 'twitch chat',
 });
 const list = blessed.list({
+    label: 'live channels',
     parent: screen,
     scrollable: true,
     top: 0,
@@ -150,6 +151,9 @@ module.exports.addMessage = (message, tags) => {
         this.handleError(err);
     }
 }
+screen.key('l' , function(ch, key){
+    return list.focus();
+})
 screen.key('q', function(ch, key) {
     return process.exit(0);
 });
@@ -186,9 +190,6 @@ screen.remove(errorMessage)
 
 screen.key('r', function(ch, key) {
     screen.realloc();
-    screen.render();
-    screen.append(box);
-    screen.append(input);
     screen.render();
 });
 
@@ -245,7 +246,7 @@ module.exports.handleError = (errorMessage) => {
         this.handleError(err + " in error handler line 185")
     }
 }
-const loading = blessed.loading ({
+const loading = blessed.loading({
     parent: list,
     top: 'center',
     left: 'center',
@@ -254,56 +255,26 @@ const loading = blessed.loading ({
     border: 'line',
     content: 'fetching data... ',
 })
-list.key('n', function(ch, key) {
-    if (followersList[cursor + 1] !== undefined) {
-        list.clearItems();
-        cursor += 1;
-        for (let follower of followersList[cursor]) {
-            list.add(follower.to_name);
-        }
-        screen.render()
-    } else {
-        followers.getFollowers().then((result) => {
-            if (result.length > 0) {
-                list.clearItems();
-                for (let follower of result) {
-                    list.add(follower.to_name);
-                }
-                followersList.push(result)
-                cursor += 1;
-            }
-            screen.render();
-        })
-    }
-})
-let cursor = 0;
-list.key('p', function(ch, key) {
-    if (cursor > 0) {
-        list.clearItems();
-        cursor -= 1
-        for (let follower of followersList[cursor]) {
-            list.add(follower.to_name);
-        }
-        screen.render();
-    }
-});
 
 list.on('select', function(item, index) {
     module.exports.handleError(item.content);
     screen.render();
 });
 
-let followersList = [];
-followers.getFollowers().then((followers) => {
-    setTimeout(() => {
-        for (let follower of followers) {
-            list.add(follower.to_name);
-        }
-        followersList.push(followers)
-        loading.stop();
-        screen.render();
-
-    }, 5000)
+followers.getLiveFollowers().then((result) => {
+    let items = new Array(); 
+    for (let follower of result) {
+        items.push({user_name: follower.user_name , viewer_count :follower.viewer_count})
+    }
+    items.sort( (a, b) => {
+        return b.viewer_count - a.viewer_count;
+    })
+    for (let f of items) {
+        list.add(f.user_name + "| " + f.viewer_count)
+    }
+    loading.stop();
+    screen.render();
 })
 box.focus();
+
 screen.render();
