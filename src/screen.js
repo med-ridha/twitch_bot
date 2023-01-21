@@ -1,4 +1,5 @@
 const blessed = require('blessed');
+let bot = require('../bot.js')
 const chalk = require('chalk')
 const followers = require('../followers.js')
 let error = null;
@@ -35,7 +36,6 @@ const list = blessed.list({
     }
 })
 const box = blessed.box({
-    label: 'chat',
     scrollable: true,
     top: 'top',
     left: 0,
@@ -53,6 +53,7 @@ const box = blessed.box({
         },
     }
 });
+
 const errorMessage = blessed.message({
     parent: screen,
     top: 'center',
@@ -151,7 +152,9 @@ module.exports.addMessage = (message, tags) => {
         this.handleError(err);
     }
 }
-screen.key('l' , function(ch, key){
+screen.key('l', function(ch, key) {
+    box.width = '80%'
+    input.width = '80%'
     return list.focus();
 })
 screen.key('q', function(ch, key) {
@@ -179,8 +182,11 @@ screen.key('e', function(_ch, _key) {
     }
 })
 
-screen.key('esc', function(_ch, _key) {
-    screen.focus()
+screen.key('escape', function(_ch, _key) {
+    /* list.hide()
+    box.width = '100%'
+    input.width = '100%' */
+    box.focus()
 })
 
 screen.append(box);
@@ -255,19 +261,49 @@ const loading = blessed.loading({
     border: 'line',
     content: 'fetching data... ',
 })
+const loadingChat = blessed.loading({
+    parent: box,
+    top: 'center',
+    left: 'center',
+    width: '40%',
+    height: 'shrink',
+    border: 'line',
+})
 
-list.on('select', function(item, index) {
-    module.exports.handleError(item.content);
+loadingChat.hide()
+list.on('select',async function(item, index) {
+    loadingChat.load('switching streamer... ')
+    box.content = "";
+    screen.render();
+    let streamer = item.content.split('|')[0].trim();
+    await bot.switchStreamer(streamer)
+    loadingChat.stop();
     screen.render();
 });
+
+function setLabels (chatLabel, inputLabel) {
+    box.setLabel(chatLabel)
+    input.setLabel(inputLabel || 'nouser');
+}
+module.exports.setLabels = setLabels;
+function handleMessage(message) {
+    let width = box.width;
+    while (message.length > 0) {
+        box.pushLine(`${message.substring(0, width)}`);
+        if (box.getScrollHeight() >= 24) { box.deleteTop(); }
+        message = message.substring(width);
+    }
+    screen.render()
+}
+module.exports.handleMessage = handleMessage;
 function setLiveFollowes() {
     followers.getLiveFollowers().then((result) => {
         list.clearItems()
-        let items = new Array(); 
+        let items = new Array();
         for (let follower of result) {
-            items.push({user_name: follower.user_name , viewer_count :follower.viewer_count})
+            items.push({ user_name: follower.user_name, viewer_count: follower.viewer_count })
         }
-        items.sort( (a, b) => {
+        items.sort((a, b) => {
             return b.viewer_count - a.viewer_count;
         })
         for (let f of items) {
@@ -280,8 +316,7 @@ function setLiveFollowes() {
 setLiveFollowes()
 setInterval(() => {
     setLiveFollowes()
-    console.log('282')
 }, (1000 * 60) * 5)
-box.focus();
 
+box.focus();
 screen.render();
