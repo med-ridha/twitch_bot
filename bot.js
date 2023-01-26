@@ -1,6 +1,7 @@
 require('/home/ridha/src/twitch_bot/node_modules/dotenv').config()
 // const trivia = require("./src/trivia.js");
 const screen = require('./src/screen.js')
+const chatBox = require('./src/chatbox.js')
 const tmi = require("tmi.js");
 //const writeToConsole = require('./src/writeToConsolev2.js').writeToConsole;
 const translate = require("./src/translate.js");
@@ -77,8 +78,12 @@ function checkIsBot(username) {
 }
 
 let client = tmi.Client(Options);
-
+screen.setLiveChannels(mrStreamer)
+setInterval(() => {
+    screen.setLiveChannels(mrStreamer);
+}, (1000 * 60) * 5);
 // for when the bot joins the raffle
+setupBot(client);
 let join = false;
 let messageCache = [];
 function setupBot(client) {
@@ -149,8 +154,7 @@ function setupBot(client) {
         }
     });
 }
-setupBot(client)
-module.exports.switchStreamer = async (streamer) => {
+async function switchStreamer(streamer) {
     messageCache = [];
     await client.disconnect()
     Options.channels = [streamer];
@@ -158,3 +162,9 @@ module.exports.switchStreamer = async (streamer) => {
     setupBot(client)
 }
 
+function handleInput(message) {
+    if (talk)
+        chatBox.parseTheThing(client, message, mrStreamer, translate, messageCache);
+}
+module.exports.handleInput = handleInput;
+module.exports.switchStreamer = switchStreamer;

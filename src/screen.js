@@ -1,5 +1,6 @@
 const blessed = require('blessed');
 let bot = require('../bot.js')
+const { langCodes } = require('./translang.js')
 const chalk = require('chalk')
 const followers = require('../followers.js')
 let error = null;
@@ -8,6 +9,34 @@ const screen = blessed.screen({
     smartCSR: true,
     title: 'twitch chat',
 });
+
+
+const langCodesList = blessed.list({
+    label: 'languages codes',
+    parent: screen,
+    top: '10%',
+    left: 'center',
+    width: '40%',
+    height: '90%',
+    keys: true,
+    vi: true,
+    border: {
+        type: 'line'
+    },
+    style: {
+        fg: 'white',
+        bg: 'black',
+        border: {
+            fg: '#f0f0f0'
+        },
+        focus: {
+            border: {
+                bg: 'red'
+            }
+        }
+    }
+})
+screen.remove(langCodesList)
 const list = blessed.list({
     label: 'live channels',
     parent: screen,
@@ -102,11 +131,11 @@ function getBadges(tags) {
             else if (key === "verified") { key = chalk.blue(`[✓]`); count += 3 }
             else if (key === "bits") { key = chalk.red(`[¢]`); count += 3 }
             else if (key === "staff") { key = chalk.cyan(`[✯]`); count += 3 }
-            else if (key === "premium") { key = chalk.red(`[ᴴ]`); count += 3 }
+            else if (key === "premium") { key = chalk.red(`[P]`); count += 3 }
             else if (key === "global_mod") { key = chalk.cyan(`[╀]`); count += 3 }
             else if (key === "broadcaster") { key = chalk.red(`[⬤]`); count += 3 }
             else if (key === "admin") { key = chalk.red(`[✪]`); count += 3 }
-            else if (key === "turbo") { key = chalk.blue(`[➠]`); count += 3 }
+            else if (key === "turbo") { key = chalk.blue(`[T]`); count += 3 }
             else key = "";
             msg += `${key}`;
         }
@@ -169,12 +198,11 @@ screen.key(['i', 'a'], function(ch, key) {
 input.key('enter', function(ch, key) {
     let value = input.getValue();
     value = value.replace(/\n/g, '');
-    box.insertBottom(value);
+    bot.handleInput(value);
     input.clearValue();
     input.resetScroll();
     screen.render();
 });
-
 
 screen.key('e', function(_ch, _key) {
     if (error != null) {
@@ -224,34 +252,42 @@ function createError(error) {
         }
     })
 }
-module.exports.handleError = (errorMessage) => {
+function handleError(errorMessage) {
     try {
-        error = createError(`${errorMessage} \n\t press any key to close (not q)`);
-        screen.append(error)
-        error.focus();
-        screen.render();
-        error.addListener('keypress', (_ch, _key) => {
-            try {
-                screen.remove(error);
-                error.destroy();
-                error = null;
-                screen.render();
-            } catch (err) {
-                // TODO: handle error
-            }
-        })
-        setTimeout(() => {
-            if (error != null) {
-                screen.remove(error);
-                error.destroy();
-                error = null;
-                screen.render();
-            }
-        }, 5000)
+        if (error == null) {
+            error = createError(`${errorMessage} \n\t press any key to close (not q)`);
+            screen.append(error)
+            error.focus();
+            screen.render();
+            error.addListener('keypress', (_ch, _key) => {
+                try {
+                    screen.remove(error);
+                    error.destroy();
+                    error = null;
+                    screen.render();
+                } catch (err) {
+                    // TODO: handle error
+                }
+            })
+            setTimeout(() => {
+                if (error != null) {
+                    screen.remove(error);
+                    error.destroy();
+                    error = null;
+                    screen.render();
+                }
+            }, 5000)
+        } else {
+            // TODO: handle multiple errors at once
+        }
     } catch (err) {
         this.handleError(err + " in error handler line 185")
     }
 }
+
+module.exports.handleError = handleError
+
+
 const loading = blessed.loading({
     parent: list,
     top: 'center',
@@ -271,7 +307,7 @@ const loadingChat = blessed.loading({
 })
 
 loadingChat.hide()
-list.on('select',async function(item, index) {
+list.on('select', async function(item, index) {
     loadingChat.load('switching streamer... ')
     box.content = "";
     screen.render();
@@ -281,10 +317,11 @@ list.on('select',async function(item, index) {
     screen.render();
 });
 
-function setLabels (chatLabel, inputLabel) {
+function setLabels(chatLabel, inputLabel) {
     box.setLabel(chatLabel)
     input.setLabel(inputLabel || 'nouser');
 }
+
 module.exports.setLabels = setLabels;
 function handleMessage(message) {
     let width = box.width;
@@ -296,7 +333,7 @@ function handleMessage(message) {
     screen.render()
 }
 module.exports.handleMessage = handleMessage;
-function setLiveFollowes() {
+function setLiveChannels(current) {
     followers.getLiveFollowers().then((result) => {
         list.clearItems()
         let items = new Array();
@@ -308,15 +345,63 @@ function setLiveFollowes() {
         })
         for (let f of items) {
             list.add(f.user_name + "| " + `${chalk.red(f.viewer_count)}`)
+            if (f.user_name.toLowerCase() === current.toLowerCase()) {
+                let index = list.getItemIndex(f.user_name + "| " + `${chalk.red(f.viewer_count)}`)
+                list.select(index);
+            }
         }
         loading.stop();
         screen.render();
     })
 }
-setLiveFollowes()
-setInterval(() => {
-    setLiveFollowes()
-}, (1000 * 60) * 5)
+module.exports.setLiveChannels = setLiveChannels 
+let langCodesShowing = false
+function addLangCodes() {
+    if (langCodesShowing == false) {
+        langCodesList.setItems(langCodes.map(x => x[0] + " - " + x[1]));
+        langCodesList.focus();
+        screen.append(langCodesList);
+        screen.render();
+        langCodesShowing = true;
+    }
+}
 
+screen.key('b', function(_, __) {
+    if (langCodesShowing) {
+        return langCodesList.focus();
+    }else{
+        return addLangCodes();
+    }
+})
+
+langCodesList.key('escape', function(_, __) {
+    screen.remove(langCodesList);
+    langCodesShowing = false;
+    return screen.render();
+})
 box.focus();
+screen.key('?', function(_, __) {
+    let help = blessed.message({
+        parent: screen,
+        top: 'center',
+        left: 'center',
+        width: '50%',
+        height: 'shrink',
+        border: 'line',
+        focused: true,
+    });
+    help.setContent(`
+    q - quit
+    l - focus live channels list
+    a or i - focus input 
+    escape - focus the chat box
+    b - show or focus the list of available languages codes
+    `);
+    help.focus();
+    screen.render();
+    help.key('escape', function (_, __ ) {
+        screen.remove(help);
+        screen.render();
+    })
+})
 screen.render();
