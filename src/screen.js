@@ -278,7 +278,7 @@ function handleError(errorMessage) {
                 }
             }, 5000)
         } else {
-            // TODO: handle multiple errors at once
+            // TODO: what should i do here?
         }
     } catch (err) {
         this.handleError(err + " in error handler line 185")
