@@ -1,4 +1,4 @@
-require('/home/ridha/src/twitch_bot/node_modules/dotenv').config()
+require('dotenv').config()
 // const trivia = require("./src/trivia.js");
 const screen = require('./src/screen.js')
 const chatBox = require('./src/chatbox.js')
