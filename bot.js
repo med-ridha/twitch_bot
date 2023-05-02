@@ -154,6 +154,7 @@ function setupBot(client) {
         }
     });
 }
+
 async function switchStreamer(streamer) {
     messageCache = [];
     await client.disconnect()
@@ -166,5 +167,6 @@ function handleInput(message) {
     if (talk)
         chatBox.parseTheThing(client, message, mrStreamer, translate, messageCache);
 }
+
 module.exports.handleInput = handleInput;
 module.exports.switchStreamer = switchStreamer;
