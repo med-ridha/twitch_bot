@@ -37,6 +37,33 @@ const langCodesList = blessed.list({
     }
 })
 screen.remove(langCodesList)
+const box = blessed.list({
+    label: 'chat',
+    parent: screen,
+    scrollable: true,
+    top: 'top',
+    left: 0,
+    width: '80%',
+    height: '80%',
+    border: {
+        type: 'line'
+    },
+    keys: true,
+    vi: true,
+    search: false,
+    style: {
+        fg: 'white',
+        bg: 'black',
+        border: {
+            fg: '#f0f0f0'
+        },
+        focus: {
+            border: {
+                bg: 'grey'
+            }
+        }
+    }
+})
 const list = blessed.list({
     label: 'live channels',
     parent: screen,
@@ -64,7 +91,7 @@ const list = blessed.list({
         }
     }
 })
-const box = blessed.box({
+/* const box = blessed.box({
     scrollable: true,
     top: 'top',
     left: 0,
@@ -81,7 +108,8 @@ const box = blessed.box({
             fg: 'grey'
         },
     }
-});
+
+}); */
 
 const errorMessage = blessed.message({
     parent: screen,
@@ -145,6 +173,8 @@ function getBadges(tags) {
     return [msg, count];
 }
 
+let numberOfItems = 0;
+
 module.exports.addMessage = (message, tags) => {
     try {
         let [status, count] = getBadges(tags)
@@ -166,11 +196,16 @@ module.exports.addMessage = (message, tags) => {
                 totalSpace = Array(0).join(' ');
             }
             if (tagged) {
-                box.pushLine(`${totalSpace}${firstHalf}:${chalk.red(message.substring(0, width))}`);
+                //box.pushLine(`${totalSpace}${firstHalf}:${chalk.red(message.substring(0, width))}`);
+                box.pushItem(`${totalSpace}${firstHalf}:${chalk.red(message.substring(0, width))}`);
             } else {
-                box.pushLine(`${totalSpace}${firstHalf}:${message.substring(0, width)}`);
+                //box.pushLine(`${totalSpace}${firstHalf}:${message.substring(0, width)}`);
+                box.pushItem(`${totalSpace}${firstHalf}:${message.substring(0, width)}`);
             }
-            if (box.getScrollHeight() >= 24) { box.deleteTop(); }
+            //if (box.getScrollHeight() >= 24) { box.deleteTop(); }
+            if (numberOfItems >= 100) { box.shiftItem() }
+            numberOfItems++
+            box.scroll(1, true);
             firstHalf = "";
             i += 1;
             message = message.substring(width);

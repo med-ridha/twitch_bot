@@ -101,9 +101,11 @@ function setupBot(client) {
         screen.addMessage(message, tags)
     });
     client.on("message", (_, tags, message, self) => {
+        if (self) return;
         let username = tags.username; let isBot = false; let isCommand = false;
         if (message.substring(0, 1) === '!') { isCommand = true; }
-        if (self || checkIsBot(username.toLowerCase())) { isBot = true; }
+        if (checkIsBot(username.toLowerCase())) { isBot = true; }
+
         message = message.toString().replace(/\s+/g, ' ');
         message = message.toString().replace(/&/g, ' ');
         messageCache.push([username, message]);
@@ -164,8 +166,7 @@ async function switchStreamer(streamer) {
 }
 
 function handleInput(message) {
-    if (talk)
-        chatBox.parseTheThing(client, message, mrStreamer, translate, messageCache);
+    chatBox.parseTheThing(client, message, mrStreamer, translate,talk, messageCache, switchStreamer);
 }
 
 module.exports.handleInput = handleInput;
