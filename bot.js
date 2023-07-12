@@ -1,7 +1,7 @@
 require('dotenv').config()
-// const trivia = require("./src/trivia.js");
 const screen = require('./src/screen.js')
 const chatBox = require('./src/chatbox.js')
+const trivia = require("./src/trivia.js");
 const tmi = require("tmi.js");
 //const writeToConsole = require('./src/writeToConsolev2.js').writeToConsole;
 const translate = require("./src/translate.js");
@@ -86,6 +86,30 @@ setInterval(() => {
 setupBot(client);
 let join = false;
 let messageCache = [];
+function getBadges(tags) {
+    let msg = "";
+    let count = 0;
+    try {
+        for (let [key] of Object.entries(tags.badges)) {
+            if (key === "subscriber" || key === "founder") { key = chalk.yellow(`[❤️️]`); count += 3 }
+            else if (key === "moderator") { key = chalk.green(`[♔]`); count += 3 }
+            else if (key === "vip") { key = chalk.magenta(`[◆]`); count += 3 }
+            else if (key === "verified") { key = chalk.blue(`[✓]`); count += 3 }
+            else if (key === "bits") { key = chalk.red(`[¢]`); count += 3 }
+            else if (key === "staff") { key = chalk.cyan(`[✯]`); count += 3 }
+            else if (key === "premium") { key = chalk.red(`[P]`); count += 3 }
+            else if (key === "global_mod") { key = chalk.cyan(`[╀]`); count += 3 }
+            else if (key === "broadcaster") { key = chalk.red(`[⬤]`); count += 3 }
+            else if (key === "admin") { key = chalk.red(`[✪]`); count += 3 }
+            else if (key === "turbo") { key = chalk.blue(`[T]`); count += 3 }
+            else key = "";
+            msg += `${key}`;
+        }
+    } catch (e) {
+        msg += "";
+    }
+    return [msg, count];
+}
 function setupBot(client) {
     mrStreamer = Options.channels[0].replace('#', '');
     client.connect().catch((e) => screen.handleError(e));
@@ -128,12 +152,12 @@ function setupBot(client) {
         else {
             screen.addMessage(message, tags)
         }
-        if (self) return;
         let args = message.split(" ");
         if (talk) {
             args = message.toLowerCase().split(" ");
             if (args[0] === `!trivia` || args[0] === `!t`) {
-                // trivia.gameManager(args, status, client, mrStreamer, username);
+                let [status, _count] = getBadges();
+                trivia.gameManager(args, status, client, mrStreamer, username);
             }
             message = message.toLowerCase();
             if (!join && tags.username.toLowerCase() === "streamelements" && message.includes(`enter by typing "!join"`)) {
@@ -165,8 +189,8 @@ async function switchStreamer(streamer) {
     setupBot(client)
 }
 
-function handleInput(message) {
-    chatBox.parseTheThing(client, message, mrStreamer, translate,talk, messageCache, switchStreamer);
+function handleInput(message,  replaceWithTranslation) {
+    chatBox.parseTheThing(client, message,  mrStreamer, translate,talk, messageCache, switchStreamer, replaceWithTranslation);
 }
 
 module.exports.handleInput = handleInput;

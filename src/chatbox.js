@@ -5,7 +5,7 @@ let JAM = ["babyJAM", "catJAM", `Dance`];
 let ph = ``;
 let spamtheJAM = '';
 let target = "";
-module.exports.parseTheThing = function(chatbot, message, mrStreamer, trans, talk, messageCache, switchStreamer) {
+module.exports.parseTheThing = function(chatbot, message, mrStreamer, trans, talk, messageCache, switchStreamer, replaceWithTranslation) {
     if (message.substr(0, 1) === '!') {
         message = message.substr(1, message.length - 1);
         let args = message.split(" ");
@@ -15,6 +15,9 @@ module.exports.parseTheThing = function(chatbot, message, mrStreamer, trans, tal
             case "say": case "send": case "s":
                 if (talk)
                     chatbot.say(mrStreamer, messageRaw);
+                break;
+            case "trans":
+                replaceWithTranslation();
                 break;
             case "transto":
                 if (talk) {

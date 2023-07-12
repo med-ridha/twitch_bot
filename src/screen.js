@@ -175,11 +175,15 @@ function getBadges(tags) {
 
 let numberOfItems = 0;
 
+let AllMessages = []
+
 module.exports.addMessage = (message, tags) => {
     try {
         let [status, count] = getBadges(tags)
         let color = tags.color ? tags.color : '#FFFFFF'
         let username = tags.username;
+        AllMessages.push({ username, message })
+        if (AllMessages.length > 100) AllMessages.shift();
         let space = Array(Math.abs(30 - username.length)).join(' ');
         let statusSpace = Array(Math.abs(10 - count)).join(' ');
         let time = new Date().toLocaleTimeString().split(':').slice(0, 2).join(':');
@@ -197,10 +201,10 @@ module.exports.addMessage = (message, tags) => {
             }
             if (tagged) {
                 //box.pushLine(`${totalSpace}${firstHalf}:${chalk.red(message.substring(0, width))}`);
-                box.pushItem(`${totalSpace}${firstHalf}:${chalk.red(message.substring(0, width))}`);
+                box.pushLine(`${totalSpace}${firstHalf}:${chalk.red(message.substring(0, width))}`);
             } else {
                 //box.pushLine(`${totalSpace}${firstHalf}:${message.substring(0, width)}`);
-                box.pushItem(`${totalSpace}${firstHalf}:${message.substring(0, width)}`);
+                box.pushLine(`${totalSpace}${firstHalf}:${message.substring(0, width)}`);
             }
             //if (box.getScrollHeight() >= 24) { box.deleteTop(); }
             if (numberOfItems >= 100) { box.shiftItem() }
@@ -229,11 +233,14 @@ screen.key(['i', 'a'], function(ch, key) {
     input.focus();
 });
 
+async function replaceWithTranslation(message) {
+    console.log(AllMessages)
+}
 
 input.key('enter', function(ch, key) {
     let value = input.getValue();
     value = value.replace(/\n/g, '');
-    bot.handleInput(value);
+    bot.handleInput(value, replaceWithTranslation);
     input.clearValue();
     input.resetScroll();
     screen.render();
@@ -257,7 +264,7 @@ screen.append(input);
 screen.remove(errorMessage)
 
 
-screen.key('r', function(ch, key) {
+screen.key('r', function(_ch, _key) {
     screen.realloc();
     screen.render();
 });
@@ -389,7 +396,7 @@ function setLiveChannels(current) {
         screen.render();
     })
 }
-module.exports.setLiveChannels = setLiveChannels 
+module.exports.setLiveChannels = setLiveChannels
 let langCodesShowing = false
 function addLangCodes() {
     if (langCodesShowing == false) {
@@ -404,7 +411,7 @@ function addLangCodes() {
 screen.key('b', function(_, __) {
     if (langCodesShowing) {
         return langCodesList.focus();
-    }else{
+    } else {
         return addLangCodes();
     }
 })
@@ -434,7 +441,7 @@ screen.key('?', function(_, __) {
     `);
     help.focus();
     screen.render();
-    help.key('escape', function (_, __ ) {
+    help.key('escape', function(_, __) {
         screen.remove(help);
         screen.render();
     })

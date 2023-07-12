@@ -19,7 +19,6 @@ function getPlayersFromDB() {
     });
 }
 getPlayersFromDB();
-
 function allPlayers(client, mrStreamer){
     database.fetchData().then((res) => {
         let msg = "";
@@ -65,7 +64,7 @@ async function getQuestions(client, mrStreamer) {
             body: JSON.stringify(),
         }).then(response => {
             response.json().then(result => {
-                console.log(result.response_code);
+                //console.log(result.response_code);
                 if(result.response_code == 2){
                     client.say(mrStreamer, `invalid paramaters please see the "!trivia doc" for more info`);
                     res(1);
@@ -132,9 +131,10 @@ function startTrivia(client, mrStreamer) {
                 players = [];
                 i = 0;
                 started = true;
-                setTimeout(()=>{
+                nextQuestion(client, mrStreamer);
+                timer = setInterval(() => {
                     nextQuestion(client, mrStreamer);
-                }, 1000);
+                }, 15000)
             }else{
                 return 1;
             }	
@@ -169,6 +169,7 @@ let correctAnswer
 let suggestions = []
 
 async function nextQuestion(client, mrStreamer) {
+    currentQuestionPlayers = [];
     question = await format(quiz[i].question); 
     correctAnswer = await format(quiz[i].correct_answer);
     let message = "";
@@ -196,24 +197,23 @@ async function nextQuestion(client, mrStreamer) {
     }
     client.say(mrStreamer, `question : ${question}`)
     client.say(mrStreamer, `suggestions : [ ${message} ]`)
-    console.log(correctAnswer);
     i++;
+    setTimeout(() => {
+        client.say(mrStreamer, `correct answer was : ${correctAnswer}`)
+    }, 14500)
 }
 
 let currentQuestionPlayers = [];
-function play(client, mrStreamer, answer, player) {
+function play( answer, player) {
     // so that people can't spam answers
-    console.log(currentQuestionPlayers);
+    //console.log(currentQuestionPlayers);
     if (!currentQuestionPlayers[player]){
         currentQuestionPlayers[player] = true;
         if (!players[player]){
             players[player] = 0;
         }
         if (suggestions[answer-1] === correctAnswer) {
-            client.say(mrStreamer, `correct : ${player}`)
             players[player]++;
-            currentQuestionPlayers = [];
-            nextQuestion(client, mrStreamer);
         }
     }
 }
@@ -266,7 +266,7 @@ function stopTrivia(client, mrStreamer) {
 	}
     }
     if(size(players) > 0){
-        console.log(db);
+        //console.log(db);
         database.addtodb(db);
     }
     return 0;
@@ -306,7 +306,7 @@ module.exports.gameManager = function(args, status, client, mrStreamer, username
         more(client, mrStreamer);
     } else if (args[1] === `start` && trustedUser) {
         client.say(mrStreamer, `game starting soon each player has one chance to answer each question, answer by typing !t followed by suggestion number`)
-        setParams(args[2] || 10, args[3] || 0, args[4] || "", args[5] || "");
+        setParams(args[2] || 10, args[3] || 0, args[4] || "", args[5] || "multiple");
         setTimeout(() => {
             startTrivia(client, mrStreamer)
         }, 1000);
@@ -332,7 +332,7 @@ module.exports.gameManager = function(args, status, client, mrStreamer, username
                 currentQuestionPlayers = [];
                 nextQuestion(client, mrStreamer);
             }else if (!isNaN(args[1]) && (args[1] <= 4 && args[1] > 0)) {
-                play(client, mrStreamer, args[1], username);
+                play(args[1], username);
             } else {
                 client.say(mrStreamer, `the answer should be the number of one of the choices`);
                 return;

@@ -40,7 +40,7 @@ module.exports.addtodb = async function(data) {
                     let dbo = db.db("mydb");
                     dbo.collection("scoreboard").insertMany(data, function(err, result) {
                         if (err) throw err;
-                        console.log(result);
+                        //console.log(result);
                         db.close().then(() => {
                             res(0);
                         })
@@ -61,7 +61,7 @@ async function deleteCollection() {
             let dbo = db.db("mydb");
             dbo.collection("scoreboard").drop(function(err, delOK) {
                 if (err) throw err;
-                if (delOK) console.log("collection deleted");
+                // if (delOK) console.log("collection deleted");
                 db.close().then(() => {
                     res(0);
                 })
@@ -78,7 +78,7 @@ async function addtobackupdb(data) {
             MongoClient.connect(uri, { useUnifiedTopology: true }, function(err, db) {
                 let dbo = db.db("backup");
                 dbo.collection("scoreboard2").insertMany(data, function(err, result) {
-                    console.log(result);
+                    //console.log(result);
                     db.close().then(() => {
                         res(0);
                     })

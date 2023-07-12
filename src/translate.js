@@ -15,7 +15,7 @@ module.exports.translate = async function(message){
             const raw = await result.json();
             return await raw;
         }catch {
-            return "something went wrong!! at t:20" ;
+            return "something went wrong!! at t:18" ;
         }
     }
     else return `nothing to translate :(`
@@ -39,7 +39,7 @@ module.exports.translateTo = async function(args){
         const raw = await result.json();
         return await raw;
     }catch {
-        return "something went wrong!! at t:67" ;
+        return "something went wrong!! at t:42" ;
     }
 
 }
