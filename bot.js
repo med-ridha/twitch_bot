@@ -73,6 +73,28 @@ function checkIsBot(username) {
         username == "streamlabs";
 }
 
+function getBadges(tags) {
+    let status = "";
+    try {
+        for (let [key] of Object.entries(tags.badges)) {
+            if (key =="broadcaster") status += "[broad]"; 
+            if (key === "subscriber" || key === "founder") status += '[sub]';
+            if (key === "moderator")  status += '[mod]'; 
+            if (key === "vip") status += '[vip]';
+            if (key === "verified") status += '[verified]';
+            if (key === "bits") status += 'bits'; 
+            if (key === "staff") status += '[staff]'; 
+            if (key === "premium") status += '[premium]'; 
+            if (key === "global_mod") status += '[gmod]';
+            if (key === "broadcaster") status += '[broad]';
+            if (key === "admin") status += '[admin]'; 
+            if (key === "turbo") status += '[turbo]'; 
+        }
+    } catch (e) {
+        msg += "";
+    }
+    return status;
+}
 let client = tmi.Client(Options);
 // for when the bot joins the raffle
 setupBot(client);
@@ -104,19 +126,23 @@ function setupBot(client) {
         if (talk) {
             args = message.toLowerCase().split(" ");
             if (args[0] === `!trivia` || args[0] === `!t`) {
-                let [status, _count] = getBadges();
-                //trivia.gameManager(args, status, client, mrStreamer, username);
+                let [_msg, _count, status] = getBadges(tags);
+                trivia.gameManager(args, status, client, mrStreamer, username);
             }
             if (args[0] === "!transto") {
-                args.shift();
-                translate.translateTo(args).then(msg => {
-                    let finalmessage = "";
-                    for (let i = 0; i < msg[0].length; i++) {
-                        if (msg[0][i][0] !== null)
-                            finalmessage += msg[0][i][0] + ' ';
-                    }
-                    client.say(mrStreamer, `${finalmessage}`);
-                });
+                let status = getBadges(tags);
+                if (!isBot && (status.includes('vip') || status.includes('mod') || status.includes('broad'))){
+                    args.shift();
+                    translate.translateTo(args).then(msg => {
+                        let finalmessage = "";
+                        for (let i = 0; i < msg[0].length; i++) {
+                            if (msg[0][i][0] !== null)
+                                finalmessage += msg[0][i][0] + ' ';
+                        }
+                        client.say(mrStreamer, `${finalmessage}`);
+                    });
+                }
+
             }
             message = message.toLowerCase();
             if (!join && tags.username.toLowerCase() === "streamelements" && message.includes(`enter by typing "!join"`)) {
