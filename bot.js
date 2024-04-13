@@ -78,10 +78,10 @@ function checkIsBot(username) {
 }
 
 let client = tmi.Client(Options);
-screen.setLiveChannels(mrStreamer)
-setInterval(() => {
-    screen.setLiveChannels(mrStreamer);
-}, (1000 * 60) * 5);
+//screen.setLiveChannels(mrStreamer)
+//setInterval(() => {
+//    screen.setLiveChannels(mrStreamer);
+//}, (1000 * 60) * 5);
 // for when the bot joins the raffle
 setupBot(client);
 let join = false;

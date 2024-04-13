@@ -2,7 +2,7 @@ const blessed = require('blessed');
 let bot = require('../bot.js')
 const { langCodes } = require('./translang.js')
 const chalk = require('chalk')
-const followers = require('../followers.js')
+//const followers = require('../followers.js')
 let error = null;
 
 const screen = blessed.screen({
@@ -64,11 +64,12 @@ const list = blessed.list({
         }
     }
 })
+screen.remove(list);
 const box = blessed.box({
     scrollable: true,
     top: 'top',
     left: 0,
-    width: '80%',
+    width: '100%',
     height: '80%',
     tags: true,
     border: {
@@ -105,7 +106,7 @@ const input = blessed.textarea({
     label: 'Write stuff',
     bottom: 0,
     left: 0,
-    width: '80%',
+    width: '100%',
     height: '20%',
     inputOnFocus: true,
     border: {
@@ -125,14 +126,14 @@ function getBadges(tags) {
     let count = 0;
     try {
         for (let [key] of Object.entries(tags.badges)) {
-            if (key === "subscriber" || key === "founder") { key = chalk.yellow(`[❤️️]`); count += 3 }
-            else if (key === "moderator") { key = chalk.green(`[♔]`); count += 3 }
-            else if (key === "vip") { key = chalk.magenta(`[◆]`); count += 3 }
+            if (key === "subscriber" || key === "founder") { key = chalk.yellow(`[S]`); count += 3 }
+            else if (key === "moderator") { key = chalk.green(`[M]`); count += 3 }
+            else if (key === "vip") { key = chalk.magenta(`[V]`); count += 3 }
             else if (key === "verified") { key = chalk.blue(`[✓]`); count += 3 }
             else if (key === "bits") { key = chalk.red(`[¢]`); count += 3 }
             else if (key === "staff") { key = chalk.cyan(`[✯]`); count += 3 }
             else if (key === "premium") { key = chalk.red(`[P]`); count += 3 }
-            else if (key === "global_mod") { key = chalk.cyan(`[╀]`); count += 3 }
+            else if (key === "global_mod") { key = chalk.cyan(`[[╀]]`); count += 5 }
             else if (key === "broadcaster") { key = chalk.red(`[⬤]`); count += 3 }
             else if (key === "admin") { key = chalk.red(`[✪]`); count += 3 }
             else if (key === "turbo") { key = chalk.blue(`[T]`); count += 3 }
@@ -148,7 +149,7 @@ function getBadges(tags) {
 module.exports.addMessage = (message, tags) => {
     try {
         let [status, count] = getBadges(tags)
-        let color = tags.color ? tags.color : '#FFFFFF'
+        let color = tags.color ?? '#FFFFFF'
         let username = tags.username;
         let space = Array(Math.abs(30 - username.length)).join(' ');
         let statusSpace = Array(Math.abs(10 - count)).join(' ');
@@ -158,7 +159,7 @@ module.exports.addMessage = (message, tags) => {
         let tagged = false
         tagged = message.indexOf('zarga') > -1;
         let i = 0;
-        let firstHalf = `${time} ${statusSpace}${status}${chalk.hex(color)(username)}${space}`
+        let firstHalf = `${time} ${statusSpace}${status}${chalk.hex(color)(username)}${space} `
         while (message.length > 0) {
             if (i > 0) {
                 totalSpace = Array(45).join(' ');
@@ -170,13 +171,13 @@ module.exports.addMessage = (message, tags) => {
             } else {
                 box.pushLine(`${totalSpace}${firstHalf}:${message.substring(0, width)}`);
             }
-            if (box.getScrollHeight() >= 24) { box.deleteTop(); }
+            if (box.getScrollHeight() > box.height - 4) { box.deleteTop(); }
+
             firstHalf = "";
             i += 1;
             message = message.substring(width);
         }
         screen.render();
-
     } catch (err) {
         this.handleError(err);
     }
@@ -333,28 +334,28 @@ function handleMessage(message) {
     screen.render()
 }
 module.exports.handleMessage = handleMessage;
-function setLiveChannels(current) {
-    followers.getLiveFollowers().then((result) => {
-        list.clearItems()
-        let items = new Array();
-        for (let follower of result) {
-            items.push({ user_name: follower.user_name, viewer_count: follower.viewer_count })
-        }
-        items.sort((a, b) => {
-            return b.viewer_count - a.viewer_count;
-        })
-        for (let f of items) {
-            list.add(f.user_name + "| " + `${chalk.red(f.viewer_count)}`)
-            if (f.user_name.toLowerCase() === current.toLowerCase()) {
-                let index = list.getItemIndex(f.user_name + "| " + `${chalk.red(f.viewer_count)}`)
-                list.select(index);
-            }
-        }
-        loading.stop();
-        screen.render();
-    })
-}
-module.exports.setLiveChannels = setLiveChannels 
+//function setLiveChannels(current) {
+//    followers.getLiveFollowers().then((result) => {
+//        list.clearItems()
+//        let items = new Array();
+//        for (let follower of result) {
+//            items.push({ user_name: follower.user_name, viewer_count: follower.viewer_count })
+//        }
+//        items.sort((a, b) => {
+//            return b.viewer_count - a.viewer_count;
+//        })
+//        for (let f of items) {
+//            list.add(f.user_name + "| " + `${chalk.red(f.viewer_count)}`)
+//            if (f.user_name.toLowerCase() === current.toLowerCase()) {
+//                let index = list.getItemIndex(f.user_name + "| " + `${chalk.red(f.viewer_count)}`)
+//                list.select(index);
+//            }
+//        }
+//        loading.stop();
+//        screen.render();
+//    })
+//}
+//module.exports.setLiveChannels = setLiveChannels 
 let langCodesShowing = false
 function addLangCodes() {
     if (langCodesShowing == false) {
@@ -369,7 +370,7 @@ function addLangCodes() {
 screen.key('b', function(_, __) {
     if (langCodesShowing) {
         return langCodesList.focus();
-    }else{
+    } else {
         return addLangCodes();
     }
 })
@@ -399,7 +400,7 @@ screen.key('?', function(_, __) {
     `);
     help.focus();
     screen.render();
-    help.key('escape', function (_, __ ) {
+    help.key('escape', function(_, __) {
         screen.remove(help);
         screen.render();
     })
