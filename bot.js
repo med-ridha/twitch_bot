@@ -7,6 +7,7 @@ const tmi = require("tmi.js");
 const translate = require("./src/translate.js");
 const args = process.argv.slice(2);
 const me = process.env.me
+const ModClient = require('./src/mod.js');
 let translatethis = false;
 let talk = false;
 let chat = false;
@@ -30,9 +31,8 @@ let mrStreamer = args[0] || me;
 if (!args[1]) {
     args[1] = 'nouser';
 }
-
+let modClient = new ModClient(mrStreamer);
 let channels = [mrStreamer];
-
 let oauths = {
     user1: process.env.user1_oauth,
     user2: process.env.user2_oauth,
@@ -86,10 +86,16 @@ let client = tmi.Client(Options);
 setupBot(client);
 let join = false;
 let messageCache = [];
+/**
+    * @param {tmi.Client} client
+    */
 function setupBot(client) {
     mrStreamer = Options.channels[0].replace('#', '');
     client.connect().catch((e) => screen.handleError(e));
     screen.setLabels(mrStreamer, users[args[1]]);
+    client.on('raided', (_, username, viewers) => {
+        console.log(username, viewers)
+    });
     client.on('connected', () => {
         screen.handleMessage('connected to ' + mrStreamer)
     })
@@ -164,7 +170,7 @@ async function switchStreamer(streamer) {
 
 function handleInput(message) {
     if (talk)
-        chatBox.parseTheThing(client, message, mrStreamer, translate, messageCache);
+        chatBox.parseTheThing(client, message, mrStreamer, translate, messageCache, modClient);
 }
 module.exports.handleInput = handleInput;
 module.exports.switchStreamer = switchStreamer;

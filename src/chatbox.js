@@ -1,27 +1,33 @@
 const extra = require('./extra.js')
 const writeToConsole = require('./writeToConsolev2').writeToConsole;
+const tmi = require('tmi.js')
 const { pickuplines, puns } = extra;
 let JAM = ["babyJAM", "catJAM", `Dance`];
 let ph = ``;
 let spamtheJAM = '';
 let target = "";
-module.exports.parseTheThing = function (chatbot, message, mrStreamer, trans, messageCache){
-    if(message.substr(0, 1) === '!'){
+/**
+    * @param {tmi.Client} chatbot
+    */
+module.exports.parseTheThing = function(chatbot, message, mrStreamer, trans, messageCache, modClient) {
+    if (message.substr(0, 1) === '!') {
         message = message.substr(1, message.length - 1);
         let args = message.split(" ");
         let command = args.shift();
         let messageRaw = args.join(" ");
-        switch(command.toLowerCase()){
+        switch (command.toLowerCase()) {
+            case "ban":
+                modClient.banUser(args[0]);
+                break;
             case "say": case "send": case "s":
                 chatbot.say(mrStreamer, messageRaw);
                 break;
             case "transto":
                 trans.translateTo(args).then(msg => {
                     let finalmessage = "";
-                    for(let i=0; i < msg[0].length; i++) 
-                    {
+                    for (let i = 0; i < msg[0].length; i++) {
                         if (msg[0][i][0] !== null)
-                        finalmessage += msg[0][i][0] + ' ';
+                            finalmessage += msg[0][i][0] + ' ';
                     }
                     chatbot.say(mrStreamer, `${finalmessage}`);
                 });
@@ -34,7 +40,7 @@ module.exports.parseTheThing = function (chatbot, message, mrStreamer, trans, me
                 chatbot.say(mrStreamer, ph);
                 ph = ``;
                 break;
-            case "spamthejam" :
+            case "spamthejam":
                 spamtheJAM = setInterval(() => {
                     for (let i = 0; i < 35; i++) {
                         let pos = Math.floor(Math.random() * JAM.length);
@@ -44,7 +50,7 @@ module.exports.parseTheThing = function (chatbot, message, mrStreamer, trans, me
                     ph = ``;
                 }, 1000);
                 break;
-            case "stopthejam" :
+            case "stopthejam":
                 clearInterval(spamtheJAM);
                 break;
             case "pun":
@@ -69,14 +75,13 @@ module.exports.parseTheThing = function (chatbot, message, mrStreamer, trans, me
                 break;
             case "translate":
                 target = args[0];
-                for(let i = 0; i < messageCache.length; i++){
+                for (let i = 0; i < messageCache.length; i++) {
                     let msg = messageCache[i][1];
                     let username = messageCache[i][0];
-                    if (target === username){
+                    if (target === username) {
                         trans.translate(msg).then(msg => {
                             let finalmessage = "";
-                            for(let i=0; i < msg[0].length; i++) 
-                            {
+                            for (let i = 0; i < msg[0].length; i++) {
                                 if (msg[0][i][0] !== null)
                                     finalmessage += msg[0][i][0] + ' ';
                             }
@@ -84,7 +89,7 @@ module.exports.parseTheThing = function (chatbot, message, mrStreamer, trans, me
                         });
                     }
                 }
-                
+
                 break;
             default:
                 console.log("Command not found")
